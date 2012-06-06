@@ -1,9 +1,9 @@
-(* ************************************************************************ *)
-(* Project: Gallery                                                         *)
-(* Description: Example of usage of the module Gallery. See gallery.ml      *)
-(* Author: db0 (db0company@gmail.com, http://db0.fr/)                       *)
-(* Latest Version is on GitHub: https://github.com/db0company/Gallery       *)
-(* ************************************************************************ *)
+(* ************************************************************************** *)
+(* Project: Gallery                                                           *)
+(* Description: Example of usage of the module Gallery. See gallery.ml        *)
+(* Author: db0 (db0company@gmail.com, http://db0.fr/)                         *)
+(* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
+(* ************************************************************************** *)
 
 open HTML5
 open Eliom_parameters
