@@ -5,7 +5,7 @@ APP_NAME := gallery
 
 ## Packages required to build the server part of the application
 
-SERVER_PACKAGES := extlib #cairo
+SERVER_PACKAGES := extlib
 
 ## Packages to be linked in the client part
 
