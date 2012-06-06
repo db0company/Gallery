@@ -52,7 +52,7 @@ let is_img filename =
     (fun str -> if (String.compare ext str) == 0 then true else false)
     allowed_extension
 
-(* show_img : string list -> [> `Img ] Eliom_pervasives.HTML5.elt             *)
+(* show_img : string list -> string -> [> `Img ] Eliom_pervasives.HTML5.elt   *)
 (* Return an image node corresponding to the given image                      *)
 let show_img path description =
   img
