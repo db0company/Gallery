@@ -41,7 +41,7 @@ let no_extension filename =
 
 (* allowed_extension : string list                                            *)
 (* Known extensions for images files                                          *)
-let allowed_extension = ["JPG";"jpeg";"jpg";"png";"PNG";"gif";"GIF";"BMP";"bmp"]
+let allowed_extension = ["jpeg";"jpg";"png";"gif";"bmp"]
 
 (* is_img : string -> bool                                                    *)
 (* Check if the given filename has a correct extension corresponding to a     *)
@@ -49,7 +49,9 @@ let allowed_extension = ["JPG";"jpeg";"jpg";"png";"PNG";"gif";"GIF";"BMP";"bmp"]
 let is_img filename =
   let ext = extension filename in
   List.exists
-    (fun str -> if (String.compare ext str) == 0 then true else false)
+    (fun str ->
+      if (String.compare (String.lowercase ext) (String.lowercase str)) == 0
+      then true else false)
     allowed_extension
 
 (* show_img : string list -> string -> [> `Img ] Eliom_pervasives.HTML5.elt   *)
