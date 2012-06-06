@@ -1,9 +1,9 @@
-(* ************************************************************************ *)
-(* Project: Gallery                                                         *)
-(* Description: Module to display a pretty images gallery for Ocsigen       *)
-(* Author: db0 (db0company@gmail.com, http://db0.fr/)                       *)
-(* Latest Version is on GitHub: https://github.com/db0company/Gallery       *)
-(* ************************************************************************ *)
+(* ************************************************************************** *)
+(* Project: Gallery                                                           *)
+(* Description: Module to display a pretty images gallery for Ocsigen         *)
+(* Author: db0 (db0company@gmail.com, http://db0.fr/)                         *)
+(* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
+(* ************************************************************************** *)
 
 open HTML5
 open Eliom_parameters
@@ -27,6 +27,14 @@ let extension filename =
   in try String.sub filename start ((String.length filename) - start)
     with Invalid_argument s -> ""
 
+(* no_extension : string -> string                                            *)
+(* Return filename without its extension                                      *)
+(* Example : "document.pdf" -> "document"                                     *)
+let no_extension filename =
+  let size =
+    try (String.rindex filename '.') with Not_found -> -1
+  in try String.sub filename 0 size with Invalid_argument s -> filename
+
 (* ************************************************************************** *)
 (* Images tools                                                               *)
 (* ************************************************************************** *)
@@ -46,9 +54,9 @@ let is_img filename =
 
 (* show_img : string list -> [> `Img ] Eliom_pervasives.HTML5.elt             *)
 (* Return an image node corresponding to the given image                      *)
-let show_img path =
+let show_img path description =
   img
-    ~alt:"Ocsigen"
+    ~alt:description
     ~src:(Eliom_output.Xhtml.make_uri
             ~service:(Eliom_services.static_dir ()) path)
     ()
@@ -73,7 +81,7 @@ let show_thumbnail path filename =
   show_img (path
             @ [if (Sys.file_exists (raw_path (path@[thumbnail_name filename])))
               then thumbnail_name filename
-              else default_thumbnail])
+              else default_thumbnail]) (no_extension filename)
 
 (* ************************************************************************** *)
 (* Gallery functions                                                          *)
@@ -113,7 +121,8 @@ let viewer path =
     [ul (
 	(List.map
            (fun filename ->
-             li [show_img (path @ [directory_thumbnail]);
+             li [show_img (path @ [directory_thumbnail])
+		    ("directory : " ^ filename);
 		 pcdata (filename)])
            (snd flist)
 	)
