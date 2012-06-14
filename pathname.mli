@@ -58,3 +58,22 @@ val to_string : t -> string
 
 (* Return a list of strings corresponding to the path                         *)
 val to_list : t -> string list
+
+(* ************************************************************************** *)
+(* Tools                                                                      *)
+(* ************************************************************************** *)
+
+(* Return the filename without the rest of the path                           *)
+val filename : t -> string
+
+(* Return the path without the last element                                   *)
+(* Example: "foo/bar/baz" -> "foo/bar"                                        *)
+val parent : t -> t
+
+(* Return the extansion of the given filename                                 *)
+(* Example: "document.pdf" -> "pdf"                                           *)
+val extension : t -> string
+
+(* Return filename without its extension                                      *)
+(* Example: "/foo/bar/document.pdf" -> "document"                             *)
+val no_extension : t -> string
