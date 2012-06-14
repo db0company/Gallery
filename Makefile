@@ -14,6 +14,8 @@ CLIENT_PACKAGES :=
 ## Source files for the server part
 
 SERVER_FILES := 	\
+		pathname.mli	\
+		pathname.ml	\
 		gallery.ml	\
 		main.ml		\
 		\
