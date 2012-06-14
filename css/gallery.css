@@ -1,0 +1,17 @@
+body
+{
+    margin: auto;
+    text-align: center;
+    background: #81BEF7;
+    font-family: sans-serif;
+    font-size: 24px;
+    color: #000000;
+}
+
+.hello
+{
+    width: 100%;
+    background-color: white;
+    border: 1px solid #034569;
+}
+

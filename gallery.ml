@@ -5,62 +5,44 @@
 (* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
 (* ************************************************************************** *)
 
-open HTML5
-open Eliom_parameters
+open Eliom_content
+open Html5.D
+open Eliom_parameter
 
 (* ************************************************************************** *)
-(* General tools                                                              *)
+(* Initialization                                                             *)
 (* ************************************************************************** *)
 
-(* raw_path : string list -> string                                           *)
-(* Generate a path string with a list of string.                              *)
-(* Example : ["foo"; "bar"] -> "foo/bar/"                                     *)
-let raw_path = function
-  | h::t -> List.fold_left (fun final_path str -> final_path ^ "/" ^ str) h t
-  | []   -> ""
-
-(* extension : string -> string                                               *)
-(* Return the extansion of the given filename                                 *)
-(* Example : "document.pdf" -> "pdf"                                          *)
-let extension filename =
-  let start = try (String.rindex filename '.') + 1 with Not_found -> 0
-  in try String.sub filename start ((String.length filename) - start)
-    with Invalid_argument s -> ""
-
-(* no_extension : string -> string                                            *)
-(* Return filename without its extension                                      *)
-(* Example : "document.pdf" -> "document"                                     *)
-let no_extension filename =
-  let size =
-    try (String.rindex filename '.') with Not_found -> -1
-  in try String.sub filename 0 size with Invalid_argument s -> filename
+let load_css path =
+  css_link
+    ~uri:(make_uri (Eliom_service.static_dir ())
+  	    path) ()
 
 (* ************************************************************************** *)
 (* Images tools                                                               *)
 (* ************************************************************************** *)
 
-(* allowed_extension : string list                                            *)
 (* Known extensions for images files                                          *)
 let allowed_extension = ["jpeg";"jpg";"png";"gif";"bmp"]
 
-(* is_img : string -> bool                                                    *)
+(* is_img : Pathname.t -> bool                                                *)
 (* Check if the given filename has a correct extension corresponding to a     *)
 (* known image format                                                         *)
-let is_img filename =
-  let ext = extension filename in
+let is_img path =
+  let ext = Pathname.extension path in
   List.exists
     (fun str ->
       if (String.compare (String.lowercase ext) (String.lowercase str)) == 0
       then true else false)
     allowed_extension
 
-(* show_img : string list -> string -> [> `Img ] Eliom_pervasives.HTML5.elt   *)
+(* show_img : Pathname.t -> [> `Img ] Eliom_pervasives.HTML5.elt              *)
 (* Return an image node corresponding to the given image                      *)
-let show_img path description =
+let show_img path =
   img
-    ~alt:description
-    ~src:(Eliom_output.Xhtml.make_uri
-            ~service:(Eliom_services.static_dir ()) path)
+    ~alt:(Pathname.no_extension path)
+    ~src:(make_uri
+            ~service:(Eliom_service.static_dir ()) (Pathname.to_list path))
     ()
 
 (* ************************************************************************** *)
@@ -77,13 +59,19 @@ let directory_thumbnail = ".directory.png"
 (* Return the thumbnail filename for a filename without any verification      *)
 let thumbnail_name filename = ".thb_" ^ filename
 
-(* show_thumbnail : string -> string -> [> `Img ] Eliom_pervasives.HTML5.elt  *)
+(* show_thumbnail : Pathname.t -> [> `Img ] Eliom_pervasives.HTML5.elt        *)
 (* Return an image node corresponding to the thumbnail of the given image     *)
-let show_thumbnail path filename =
-  show_img (path
-            @ [if (Sys.file_exists (raw_path (path@[thumbnail_name filename])))
-              then thumbnail_name filename
-              else default_thumbnail]) (no_extension filename)
+let show_thumbnail path =
+  let thumb_path =
+    Pathname.extend_file (Pathname.parent path)
+      (thumbnail_name (Pathname.filename path)) in
+  let which_path =
+    let default_thumbnail_path = Pathname.extend (Pathname.parent path)
+      default_thumbnail in
+    if (Sys.file_exists (Pathname.to_string thumb_path))
+    then thumb_path
+    else default_thumbnail_path in
+  show_img which_path
 
 (* ************************************************************************** *)
 (* Gallery functions                                                          *)
@@ -93,48 +81,43 @@ let show_thumbnail path filename =
 (* Browse the given folder name and return two lists :                        *)
 (* - The first list contains images filenames                                 *)
 (* - The second list contains directories filenames                           *)
-let img_dir_list pl =
-  let rpath = raw_path pl in
+let img_dir_list path =
   let no_hidden_file filename = filename.[0] != '.' in
-  let rec aux dir acc =
+  let rec aux handle acc =
     try
-      let file = Unix.readdir dir
-      in aux dir (file::acc)
-    with End_of_file -> acc
-  in let handle = Unix.opendir rpath
-     in let filelist = aux handle []
-        in (List.filter
-              (fun filename ->
-                no_hidden_file filename && is_img filename)
-              filelist,
-            List.filter
-              (fun filename ->
-                no_hidden_file filename && Sys.is_directory (rpath ^ "/"
-                                                             ^ filename))
-              filelist
-        )
+      let file = Unix.readdir handle
+      in aux handle (file::acc)
+    with End_of_file -> acc in
+  let handle = Unix.opendir (Pathname.to_string path) in
+  let filelist = aux handle []
+  in (List.filter
+        (fun filename ->
+	  let file_path = Pathname.extend_file path filename in
+	  no_hidden_file filename && is_img file_path) filelist,
+      List.filter
+        (fun filename ->
+ 	  let file_path = Pathname.extend_file path filename in
+	  no_hidden_file filename
+	  && Sys.is_directory (Pathname.to_string file_path)) filelist
+  )
 
 (* viewer : string list -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt    *)
+(* viewer_str : string -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt     *)
 (* Return a div containing a pretty displaying of a gallery                   *)
-let viewer path =
-  let flist = (img_dir_list path) in
+let aux_viewer path = 
+  let flist = img_dir_list path in
+  let dir_list = snd flist
+  and file_list = fst flist
+  and directory_thumb_path = (Pathname.extend path directory_thumbnail) in
   div
     ~a:[a_class["hello"]]
-    [ul (
-	(List.map
-           (fun filename ->
-             li [show_img (path @ [directory_thumbnail])
-		    ("directory : " ^ filename);
-		 pcdata (filename)])
-           (snd flist)
-	)
-      @
-      (List.map
-         (fun filename ->
-           li [show_thumbnail path filename;
-	       pcdata filename])
-         (fst flist)
-      )
-     )
-    ]
- 
+    [ul ((List.map
+            (fun filename ->
+	      li [show_img directory_thumb_path; pcdata filename]) dir_list) @
+	    (List.map
+	       (fun filename ->
+ 		 let file_path = Pathname.extend_file path filename in
+		 li [show_thumbnail file_path; pcdata filename]) file_list))]
+
+let viewer list_path = aux_viewer (Pathname.new_path_of_list list_path)
+and viewer_str str_path = aux_viewer (Pathname.new_path_of_string str_path)

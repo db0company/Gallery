@@ -5,25 +5,26 @@
 (* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
 (* ************************************************************************** *)
 
-open HTML5
-open Eliom_parameters
+open Eliom_content
+open Html5.D
+open Eliom_parameter
 
 let main_service =
-  Eliom_services.service
+  Eliom_service.service
     ~path:[""]
     ~get_params:unit
     ()
 
 let _ = 
-  Eliom_output.Html5.register
+  Eliom_registration.Html5.register
     ~service:main_service
     (fun () () ->
       Lwt.return
         (html
 	   (head
 	      (title (pcdata "Ocsigen Gallery Example")
-	      ) [])
-           (body [h1 [pcdata "Hello World!"];
+	      ) [Gallery.load_css ["css";"gallery.css"]])
+           (body [h1 [pcdata "Ocsigen Gallery Example"];
 		  Gallery.viewer ["images"]
 		 ])
 	)
