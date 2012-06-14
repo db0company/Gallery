@@ -77,7 +77,7 @@ let show_thumbnail path =
 (* Gallery functions                                                          *)
 (* ************************************************************************** *)
 
-(* img_dir_list : string -> (string list * string list)                       *)
+(* img_dir_list : Pathname.t -> (string list * string list)                   *)
 (* Browse the given folder name and return two lists :                        *)
 (* - The first list contains images filenames                                 *)
 (* - The second list contains directories filenames                           *)
