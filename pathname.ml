@@ -1,8 +1,7 @@
 (* ************************************************************************** *)
 (* Project: PathName                                                          *)
 (* Description: Module to manipulate filesystem paths                         *)
-(* Author: David "Thor" GIRON <thor@epitech.net>                              *)
-(* Modified by: db0 (db0company@gmail.com, http://db0.fr/)                    *)
+(* Author: db0 (db0company@gmail.com, http://db0.fr/)                         *)
 (* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
 (* ************************************************************************** *)
 
