@@ -13,10 +13,28 @@ open Eliom_parameter
 (* Initialization                                                             *)
 (* ************************************************************************** *)
 
-let load_css path =
+(* The filename of the CSS stylesheet used by gallery                         *)
+let gallery_css_file = "gallery.css"
+
+(* load_css : string list -> [> Html5_types.link ] Eliom_content_core.Html5.e *)
+(* load_css_str : string -> [> Html5_types.link ] Eliom_content_core.Html5.el *)
+(* load_css_path : Pathname.t -> [> Html5_types.link ] Eliom_content_core.Htm *)
+(* This function must be called in the HTML header with the directory where   *)
+(* the "gallery.css" is as an argument.                                       *)
+let aux_load_css path =
   css_link
     ~uri:(make_uri (Eliom_service.static_dir ())
-  	    path) ()
+  	    (Pathname.to_list path)) ()
+let load_css_path path =
+  aux_load_css (Pathname.extend_file path gallery_css_file)
+let load_css_str path_str =
+  aux_load_css
+    (Pathname.extend_file (Pathname.new_path_of_string path_str)
+       gallery_css_file)
+let load_css path_list =
+  aux_load_css
+    (Pathname.extend_file (Pathname.new_path_of_list path_list)
+       gallery_css_file)
 
 (* ************************************************************************** *)
 (* Images tools                                                               *)
@@ -103,14 +121,15 @@ let img_dir_list path =
 
 (* viewer : string list -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt    *)
 (* viewer_str : string -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt     *)
+(* viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt *)
 (* Return a div containing a pretty displaying of a gallery                   *)
-let aux_viewer path = 
+let viewer_path path = 
   let flist = img_dir_list path in
   let dir_list = snd flist
   and file_list = fst flist
   and directory_thumb_path = (Pathname.extend path directory_thumbnail) in
   div
-    ~a:[a_class["hello"]]
+    ~a:[a_class["gallery"]]
     [ul ((List.map
             (fun filename ->
 	      li [show_img directory_thumb_path; pcdata filename]) dir_list) @
@@ -119,5 +138,6 @@ let aux_viewer path =
  		 let file_path = Pathname.extend_file path filename in
 		 li [show_thumbnail file_path; pcdata filename]) file_list))]
 
-let viewer list_path = aux_viewer (Pathname.new_path_of_list list_path)
-and viewer_str str_path = aux_viewer (Pathname.new_path_of_string str_path)
+let viewer list_path = viewer_path (Pathname.new_path_of_list list_path)
+and viewer_str str_path = viewer_path (Pathname.new_path_of_string str_path)
+

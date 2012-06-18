@@ -1,14 +1,4 @@
-body
-{
-    margin: auto;
-    text-align: center;
-    background: #81BEF7;
-    font-family: sans-serif;
-    font-size: 24px;
-    color: #000000;
-}
-
-.hello
+.gallery
 {
     width: 100%;
     background-color: white;
