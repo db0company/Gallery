@@ -1,7 +1,77 @@
+/* ************************************************************************* */
+/* Project: Gallery                                                          */
+/* Description: CSS stylesheet for Gallery Ocsigen module                    */
+/* Author: db0 /db0company@gmail.com, http://db0.fr//                        */
+/* Latest Version is on GitHub: https://github.com/db0company/Gallery        */
+/* ************************************************************************* */
+
+/* Color Scheme:                                                             */
+/* - Primary Color:                                                          */
+/*   03899C    1F6B75    015965    36BBCE    5FC0CE                          */
+/* - Complementary Color:                                                    */
+/*   FF7A00    BF7530    A65000    FF9B40    FFB673                          */
+
 .gallery
 {
-    width: 100%;
-    background-color: white;
-    border: 1px solid #034569;
+    width: 96%;
+    margin: 2%;
+    background-color: #C8E7FF;
+    color: #3274A6;
+    font-size: 0.8em;
 }
+
+.gallery, .gallery li
+{
+    border: 1px solid #3274A6;
+    border-radius: 10px 10px;
+    -moz-border-radius: 10px;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#9BD3FF), to(#DBF0FF));
+}
+
+.gallery:before, .gallery:after
+{
+    display: table;
+    content: "";
+}
+.gallery:after
+{
+    clear: both;
+}
+
+.gallery ul
+{
+    margin: 0;
+    padding: 0;
+}
+
+.gallery li
+{
+    list-style-type: none;
+    list-style-position: inside;
+    border-color: #87A7BF;
+    padding: 10px;
+    margin: 10px;
+    float: left;
+    background-color: #9BD3FF;
+}
+
+.gallery li:hover
+{
+    border-color: #A65000;
+    border-width: 2px;
+    margin: 9px;
+    background-color: #FFB673;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FFB673), to(#FFDFBF));
+    cursor: pointer;
+    color: #A65000;
+}
+
+.gallery img
+{
+    display: block;
+    width: 100px;
+    height: 100px;
+    padding-bottom: 10px;
+}
+
 

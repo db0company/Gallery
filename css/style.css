@@ -1,10 +1,16 @@
+/* ************************************************************************* */
+/* Project: Gallery                                                          */
+/* Description: Example CSS stylesheet for example of usage of Gallery       */
+/* Author: db0 /db0company@gmail.com, http://db0.fr//                        */
+/* Latest Version is on GitHub: https://github.com/db0company/Gallery        */
+/* ************************************************************************* */
+
 body
 {
     margin: auto;
     text-align: center;
-    background: #81BEF7;
+    background: white;
     font-family: sans-serif;
-    font-size: 24px;
     color: #000000;
 }
 
