@@ -5,9 +5,12 @@
 (* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
 (* ************************************************************************** *)
 
+{shared{
 open Eliom_content
+open Html5
 open Html5.D
 open Eliom_parameter
+}}
 
 (* ************************************************************************** *)
 (* Initialization                                                             *)
@@ -92,7 +95,7 @@ let show_thumbnail path =
   show_img which_path
 
 (* ************************************************************************** *)
-(* Gallery functions                                                          *)
+(* Filesystem tools                                                           *)
 (* ************************************************************************** *)
 
 (* img_dir_list : Pathname.t -> (string list * string list)                   *)
@@ -119,25 +122,63 @@ let img_dir_list path =
 	  && Sys.is_directory (Pathname.to_string file_path)) filelist
   )
 
-(* viewer : string list -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt    *)
-(* viewer_str : string -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt     *)
-(* viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt *)
-(* Return a div containing a pretty displaying of a gallery                   *)
-let viewer_path path = 
+(* ************************************************************************** *)
+(* Gallery functions                                                          *)
+(* ************************************************************************** *)
+
+(* dir_handler : string -> handler                                            *)
+(* Take the directory id and return a js action that replace it by its        *)
+(* contents when clicked                                                      *)
+let dir_handler dir_id =
+  let new_div = div [pcdata "hello yes this is dog"] in
+  {{
+
+    let of_opt e = Js.Opt.get e (fun _ -> assert false) in
+
+    let replace_dir dir_id _ =
+      let gallery_div =
+	of_opt (Dom_html.document##getElementById (Js.string "gallery"))
+      and to_replace =
+	of_opt (Dom_html.document##getElementById (Js.string "gallery_ct")) in
+      (Dom.replaceChild gallery_div (To_dom.of_div %new_div) to_replace) in
+
+    let open Event_arrows in
+	let elem =
+	  of_opt (Dom_html.document##getElementById (Js.string %dir_id)) in
+	let _ = run (click elem >>> (arr (replace_dir %dir_id))) () in ()
+
+  }}
+
+(* display_img : path -> ul                                                   *)
+(* Take a path and return a list of pictures and directory                    *)
+let display_img path =
   let flist = img_dir_list path in
   let dir_list = snd flist
   and file_list = fst flist
   and directory_thumb_path = (Pathname.extend path directory_thumbnail) in
-  div
-    ~a:[a_class["gallery"]]
-    [ul ((List.map
-            (fun filename ->
-	      li [show_img directory_thumb_path; pcdata filename]) dir_list) @
-	    (List.map
-	       (fun filename ->
- 		 let file_path = Pathname.extend_file path filename in
-		 li [show_thumbnail file_path; pcdata filename]) file_list))]
+  ul ~a:[a_id "gallery_ct"]
+    ((List.map
+	(fun filename ->
+	  let dir_id = "dir_" ^ filename in
+	  let _ = Eliom_service.onload (dir_handler dir_id) in
+	  li ~a:[a_class ["dir"]; a_id dir_id]
+	    [show_img directory_thumb_path; pcdata filename]) dir_list) @
+	(List.map
+	   (fun filename ->
+ 	     let file_path = Pathname.extend_file path filename in
+	     li [show_thumbnail file_path; pcdata filename]) file_list))
 
-let viewer list_path = viewer_path (Pathname.new_path_of_list list_path)
-and viewer_str str_path = viewer_path (Pathname.new_path_of_string str_path)
+(* viewer : string list -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt    *)
+(* viewer_str : string -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt     *)
+(* viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt *)
+(* Return a div containing a pretty displaying of a gallery                   *)
+let viewer_path ?title:(t="") path =
+  div ~a:[a_class["gallery"]; a_id "gallery"]
+    [h3 ~a:[a_id "title"] [pcdata t]; display_img path]
 
+let viewer ?title:(t="") list_path =
+  viewer_path ~title:t
+    (Pathname.new_path_of_list list_path)
+and viewer_str ?title:(t="") str_path =
+  viewer_path ~title:t
+    (Pathname.new_path_of_string str_path)

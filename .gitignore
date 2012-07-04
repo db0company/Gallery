@@ -11,6 +11,7 @@ _server
 _client
 *.js
 .depend
+*.type_mli
 tests/*
 *~
 #*#

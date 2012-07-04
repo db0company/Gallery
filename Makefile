@@ -13,16 +13,18 @@ CLIENT_PACKAGES :=
 
 ## Source files for the server part
 
-SERVER_FILES := 	\
-		pathname.mli	\
+SERVER_FILES := 		\
 		pathname.ml	\
-		gallery.ml	\
-		main.ml		\
-		\
+		gallery.eliom	\
+		main.eliom	\
+				\
 
 ## Source files for the client part
 
-CLIENT_FILES :=
+CLIENT_FILES :=			\
+		gallery.eliom	\
+		main.eliom	\
+				\
 
 ## Required binaries
 

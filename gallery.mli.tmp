@@ -24,7 +24,7 @@ val load_css_path : Pathname.t -> [> Html5_types.link ] Eliom_content_core.Html5
 (* ************************************************************************** *)
 
 (* Return a div containing a pretty displaying of a gallery                   *)
-val viewer : string list -> [> Html5_types.div ] Eliom_content.Html5.D.elt
-val viewer_str : string -> [> Html5_types.div ] Eliom_content.Html5.D.elt
-val viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt
+val viewer : ?title:string -> string list -> [> Html5_types.div ] Eliom_content.Html5.D.elt
+val viewer_str : ?title:string -> string -> [> Html5_types.div ] Eliom_content.Html5.D.elt
+val viewer_path : ?title:string -> Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt
 
