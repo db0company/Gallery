@@ -123,6 +123,27 @@ let img_dir_list path =
   )
 
 (* ************************************************************************** *)
+(* Client call server side function                                           *)
+(* ************************************************************************** *)
+
+ let client_to_server_service =
+  Eliom_registration.Ocaml.register_post_coservice'
+    ~post_params:unit
+    (fun () () -> Lwt.return 3.1415926535)
+
+ let server_side_handler () =
+   Eliom_service.onload
+     {{
+       Lwt.return
+       (lwt pi =
+	   Eliom_client.call_caml_service ~service:%client_to_server_service () () in
+       Lwt.return (
+	 Dom_html.window##alert(Js.string
+				  ("pi = "^(string_of_float pi)))));
+       ()
+     }}
+
+(* ************************************************************************** *)
 (* Gallery functions                                                          *)
 (* ************************************************************************** *)
 
@@ -173,6 +194,7 @@ let display_img path =
 (* viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt *)
 (* Return a div containing a pretty displaying of a gallery                   *)
 let viewer_path ?title:(t="") path =
+  let _ = server_side_handler () in
   div ~a:[a_class["gallery"]; a_id "gallery"]
     [h3 ~a:[a_id "title"] [pcdata t]; display_img path]
 
