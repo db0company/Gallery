@@ -19,7 +19,7 @@ type t = (string list * string)
 
 (* sep : string                                                               *)
 (* The directory separator (Example: "/" for Unix)                            *)
-let sep = Filename.dir_sep
+let sep = "/"(* Filename.dir_sep *)
 
 (* empty : t                                                                  *)
 (* An empty path                                                              *)
@@ -36,7 +36,7 @@ let new_path () = empty
 (* new_path_of_string : string -> t                                           *)
 (* Return a new path initialized using a string                               *)
 let new_path_of_string spath =
-  let dirlist = Str.split (Str.regexp sep) spath in
+  let dirlist = Split.split spath sep in
   let dirstr = String.concat sep dirlist in
   ((List.rev dirlist), dirstr)
 

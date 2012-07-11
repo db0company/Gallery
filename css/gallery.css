@@ -87,3 +87,13 @@
     margin-top: 1%;
 }
 
+.gallery .path
+{
+    text-align: left;
+    letter-spacing: 0.1em;
+    font-size: 0.8em;
+    font-style: italic;
+    margin: 0;
+    padding: 0;
+    margin-left: 4%;
+}

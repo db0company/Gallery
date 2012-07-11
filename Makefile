@@ -9,11 +9,12 @@ SERVER_PACKAGES := extlib
 
 ## Packages to be linked in the client part
 
-CLIENT_PACKAGES :=
+CLIENT_PACKAGES := 
 
 ## Source files for the server part
 
 SERVER_FILES := 		\
+		split.eliom	\
 		pathname.ml	\
 		gallery.eliom	\
 		main.eliom	\
@@ -22,6 +23,8 @@ SERVER_FILES := 		\
 ## Source files for the client part
 
 CLIENT_FILES :=			\
+		split.eliom	\
+		pathname.ml	\
 		gallery.eliom	\
 		main.eliom	\
 				\

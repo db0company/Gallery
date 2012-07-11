@@ -6,15 +6,19 @@
 (* ************************************************************************** *)
 
 {shared{
+
 open Eliom_content
 open Html5
 open Html5.D
 open Eliom_parameter
+
 }}
 
 (* ************************************************************************** *)
 (* Initialization                                                             *)
 (* ************************************************************************** *)
+
+{server{
 
 (* The filename of the CSS stylesheet used by gallery                         *)
 let gallery_css_file = "gallery.css"
@@ -38,10 +42,13 @@ let load_css path_list =
   aux_load_css
     (Pathname.extend_file (Pathname.new_path_of_list path_list)
        gallery_css_file)
+}}
 
 (* ************************************************************************** *)
 (* Images tools                                                               *)
 (* ************************************************************************** *)
+
+{server{
 
 (* Known extensions for images files                                          *)
 let allowed_extension = ["jpeg";"jpg";"png";"gif";"bmp"]
@@ -57,6 +64,10 @@ let is_img path =
       then true else false)
     allowed_extension
 
+}}
+
+{shared{
+
 (* show_img : Pathname.t -> [> `Img ] Eliom_pervasives.HTML5.elt              *)
 (* Return an image node corresponding to the given image                      *)
 let show_img path =
@@ -66,9 +77,13 @@ let show_img path =
             ~service:(Eliom_service.static_dir ()) (Pathname.to_list path))
     ()
 
+}}
+
 (* ************************************************************************** *)
 (* Thumbnails tools                                                           *)
 (* ************************************************************************** *)
+
+{shared{
 
 (* Filename used when an image thumbnail does not exists                      *)
 let default_thumbnail = ".default.png"
@@ -80,23 +95,28 @@ let directory_thumbnail = ".directory.png"
 (* Return the thumbnail filename for a filename without any verification      *)
 let thumbnail_name filename = ".thb_" ^ filename
 
+(* thumbnail_path : Pathname.t -> Pathname.t                                  *)
+(* Return the same path but with the thumnail name instead of filename        *)
+let thumbnail_path path =
+  Pathname.extend_file (Pathname.parent path)
+    (thumbnail_name (Pathname.filename path))
+
+(* default_thumbnail_path : Pathname.t -> Pathname.t                          *)
+let default_thumbnail_path path =
+  Pathname.extend (Pathname.parent path) default_thumbnail
+
 (* show_thumbnail : Pathname.t -> [> `Img ] Eliom_pervasives.HTML5.elt        *)
 (* Return an image node corresponding to the thumbnail of the given image     *)
 let show_thumbnail path =
-  let thumb_path =
-    Pathname.extend_file (Pathname.parent path)
-      (thumbnail_name (Pathname.filename path)) in
-  let which_path =
-    let default_thumbnail_path = Pathname.extend (Pathname.parent path)
-      default_thumbnail in
-    if (Sys.file_exists (Pathname.to_string thumb_path))
-    then thumb_path
-    else default_thumbnail_path in
-  show_img which_path
+  show_img (thumbnail_path path)
+
+}}
 
 (* ************************************************************************** *)
 (* Filesystem tools                                                           *)
 (* ************************************************************************** *)
+
+{server{
 
 (* img_dir_list : Pathname.t -> (string list * string list)                   *)
 (* Browse the given folder name and return two lists :                        *)
@@ -122,81 +142,122 @@ let img_dir_list path =
 	  && Sys.is_directory (Pathname.to_string file_path)) filelist
   )
 
+}}
+
 (* ************************************************************************** *)
 (* Client call server side function                                           *)
 (* ************************************************************************** *)
 
- let client_to_server_service =
+{server{
+ 
+(* This service is called by the client. It returns the path and a list of    *)
+(* files and directory inside this path, so the client can display it.        *)
+let client_to_server_service =
   Eliom_registration.Ocaml.register_post_coservice'
-    ~post_params:unit
-    (fun () () -> Lwt.return 3.1415926535)
+    ~post_params:(string "path")
+    (fun () str_path ->
+      let _ = print_endline ("Request files on server side : " ^ str_path) in
+      let path = Pathname.new_path_of_string str_path in
+      Lwt.return (path, (img_dir_list path)))
 
- let server_side_handler () =
-   Eliom_service.onload
-     {{
-       Lwt.return
-       (lwt pi =
-	   Eliom_client.call_caml_service ~service:%client_to_server_service () () in
-       Lwt.return (
-	 Dom_html.window##alert(Js.string
-				  ("pi = "^(string_of_float pi)))));
-       ()
-     }}
+}}
 
 (* ************************************************************************** *)
 (* Gallery functions                                                          *)
 (* ************************************************************************** *)
 
-(* dir_handler : string -> handler                                            *)
+
+{client{
+
+(* display_img : string -> (string list, string list) -> ul                   *)
+(* Take a path, a list of directories and a list of files                     *)
+(* and return a div containing a pretty displaying of them.                   *)
+let rec display_img_client path (file_list, dir_list) =
+  let _ = dir_handler_client (Pathname.parent path) "dir_parent"
+            (* todo: miss service here*) in
+  let directory_thumb_path = (Pathname.extend path directory_thumbnail) in
+  div ~a:[a_id "gallery_ct"]
+    [p ~a:[a_class ["path"]] [pcdata (Pathname.to_string path)];
+      ul ([li ~a:[a_class ["dir"]; a_id ("dir_parent")]
+	 [show_img directory_thumb_path; pcdata "< Back"]]
+      @ (List.map
+  	  (fun filename ->
+  	  let _ = dir_handler_client (Pathname.extend_file path filename)
+	    ("dir_" ^ filename) (* todo: miss service here*) in
+  	    li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
+  	      [show_img directory_thumb_path; pcdata filename]) dir_list)
+     @ (List.map
+     	  (fun filename ->
+     	    let file_path = Pathname.extend_file path filename in
+     	    li [show_thumbnail file_path; pcdata filename]) file_list)
+    )]
+
+(* dir_handler_client : Pathname.t -> string -> post_coservice' -> unit       *)
+(* Take the path, the directory button identifier and the                     *)
+(* client_to_server_service. It set the handler associeted with the directory *)
+(* button, so when you click it, it's showing its content.                    *)
+and dir_handler_client path dir_id service =
+  let get_list_from_server () =
+    Eliom_client.call_caml_service
+      ~service:service () (Pathname.to_string path)
+  and of_opt e = Js.Opt.get e (fun _ -> assert false) in
+  let replace_dir (path, file_lists) _ =
+    let gallery_div =
+      of_opt (Dom_html.document##getElementById (Js.string "gallery"))
+    and to_replace =
+      of_opt (Dom_html.document##getElementById (Js.string "gallery_ct"))
+    and new_div = display_img_client path file_lists in
+    (Dom.replaceChild gallery_div (To_dom.of_div new_div) to_replace) in
+  let value_binding _ =
+    ignore (Lwt.bind (get_list_from_server ())
+	      (fun result -> Lwt.return (replace_dir result ()))); () in
+  let open Event_arrows in
+      let elem =
+	of_opt (Dom_html.document##getElementById (Js.string dir_id)) in
+      let _ = run (click elem >>> (arr value_binding)) () in ()
+
+}}
+
+{server{
+
+(* dir_handler_server : string -> handler                                     *)
 (* Take the directory id and return a js action that replace it by its        *)
 (* contents when clicked                                                      *)
-let dir_handler dir_id =
-  let new_div = div [pcdata "hello yes this is dog"] in
-  {{
+let dir_handler_server path =
+  let dir_id = "dir_" ^ (Pathname.filename path) in
+  {{dir_handler_client %path %dir_id %client_to_server_service}}
 
-    let of_opt e = Js.Opt.get e (fun _ -> assert false) in
+}}
 
-    let replace_dir dir_id _ =
-      let gallery_div =
-	of_opt (Dom_html.document##getElementById (Js.string "gallery"))
-      and to_replace =
-	of_opt (Dom_html.document##getElementById (Js.string "gallery_ct")) in
-      (Dom.replaceChild gallery_div (To_dom.of_div %new_div) to_replace) in
+{server{
 
-    let open Event_arrows in
-	let elem =
-	  of_opt (Dom_html.document##getElementById (Js.string %dir_id)) in
-	let _ = run (click elem >>> (arr (replace_dir %dir_id))) () in ()
-
-  }}
-
-(* display_img : path -> ul                                                   *)
+(* display_img : path -> (string list, string list) -> ul                     *)
 (* Take a path and return a list of pictures and directory                    *)
-let display_img path =
-  let flist = img_dir_list path in
-  let dir_list = snd flist
-  and file_list = fst flist
-  and directory_thumb_path = (Pathname.extend path directory_thumbnail) in
-  ul ~a:[a_id "gallery_ct"]
-    ((List.map
+let display_img_server path (file_list, dir_list) =
+  let directory_thumb_path = (Pathname.extend path directory_thumbnail) in
+  div ~a:[a_id "gallery_ct"]
+    [ul ((List.map
 	(fun filename ->
-	  let dir_id = "dir_" ^ filename in
-	  let _ = Eliom_service.onload (dir_handler dir_id) in
-	  li ~a:[a_class ["dir"]; a_id dir_id]
+	  let _ = Eliom_service.onload
+	    (dir_handler_server (Pathname.extend_file path filename)) in
+	  li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
 	    [show_img directory_thumb_path; pcdata filename]) dir_list) @
 	(List.map
 	   (fun filename ->
  	     let file_path = Pathname.extend_file path filename in
-	     li [show_thumbnail file_path; pcdata filename]) file_list))
+	     li [show_thumbnail file_path; pcdata filename]) file_list))]
+
+}}
+
+{server{
 
 (* viewer : string list -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt    *)
 (* viewer_str : string -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt     *)
 (* viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt *)
 (* Return a div containing a pretty displaying of a gallery                   *)
 let viewer_path ?title:(t="") path =
-  let _ = server_side_handler () in
   div ~a:[a_class["gallery"]; a_id "gallery"]
-    [h3 ~a:[a_id "title"] [pcdata t]; display_img path]
+    [h3 ~a:[a_id "title"] [pcdata t]; display_img_server path (img_dir_list path)]
 
 let viewer ?title:(t="") list_path =
   viewer_path ~title:t
@@ -204,3 +265,5 @@ let viewer ?title:(t="") list_path =
 and viewer_str ?title:(t="") str_path =
   viewer_path ~title:t
     (Pathname.new_path_of_string str_path)
+
+}}
