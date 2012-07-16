@@ -5,7 +5,7 @@ APP_NAME := gallery
 
 ## Packages required to build the server part of the application
 
-SERVER_PACKAGES := extlib
+SERVER_PACKAGES :=
 
 ## Packages to be linked in the client part
 
@@ -17,7 +17,7 @@ SERVER_FILES := 		\
 		split.eliom	\
 		pathname.ml	\
 		gallery.eliom	\
-		main.eliom	\
+		example.eliom	\
 				\
 
 ## Source files for the client part
@@ -26,7 +26,7 @@ CLIENT_FILES :=			\
 		split.eliom	\
 		pathname.ml	\
 		gallery.eliom	\
-		main.eliom	\
+		example.eliom	\
 				\
 
 ## Required binaries

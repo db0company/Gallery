@@ -35,7 +35,7 @@ let _ =
            (body [h1 [pcdata "Ocsigen Gallery Example"];
 		  Gallery.viewer
 		    ~title:"My pictures are so pretty"
-		    ["images"]
+		    ["static";"images"]
 		 ])
 	)
     )
