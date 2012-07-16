@@ -1,0 +1,386 @@
+\documentclass{life-fr}
+
+\begin{document}
+
+\title{Cahier des Charges}
+\subtitle{Gallery}
+\member{Lepage Barbara}{lepage.barbara@gmail.com}
+
+\summary
+{
+  Gallery est un module Ocsigen pour «~La Vie Est Un Jeu~».
+}
+
+\maketitle
+\tableofcontents
+
+%% --------------------------------------------------------------------- %%
+
+\chapter{Le projet}
+
+\section{Présentation}
+
+\textbf{Gallery} est un module Ocsigen permettant, comme son nom l'indique,
+d'afficher de manière simple et intéractive une galerie d'images.\\
+\\
+Le concept est de pouvoir appeler une des fonctions du module en spécifiant
+un simple chemin et celle-ci renvoiera un élément d'AST valide Ocsigen de
+type div contenant un affichage des images contenues dans le dossier,
+ainsi que les sous-dossier. Il sera possible de parcourir toute
+l'arborescence et de voir les images s'y trouvant.
+
+\section{Destinataires}
+
+Gallery est un module destiné à être utilisé par :
+
+\begin{itemize}
+  \item «~La Vie Est Un Jeu~». (voir détails plus loin);
+  \item La communauté des utilisateurs Ocsigen.
+\end{itemize}
+
+Il devrait donc à terme être mis en ligne sur le site Ocsigen afin de
+servir d'exemple d'utilisation d'Ocsigen. Il pourra aussi être récupéré
+tel quel pour être intégré dans un site web Ocsigen ayant besoin d'afficher
+une galerie d'images.
+
+\newpage
+
+\section{Fonctionnalités requises}
+
+La liste suivante présente les fonctionnalités minimales requises pour
+que ce module soit terminé.
+
+\begin{itemize}
+  \item Gallery doit être un module 
+  \item Il doit être complétement indépendant du site web sur lequel
+    il se trouve
+  \item Il ne doit donc pas avoir besoin de connaître les services
+    existants
+  \item Il ne doit pas créer ses propres URL
+  \item Il doit utiliser Eliom
+\end{itemize}
+\begin{itemize}
+  \item Il doit y avoir une fonction prenant en paramètre un chemin et
+    renvoyant un élément de type div contenant la galerie
+  \item L'affichage doit contenir des miniatures des images
+  \item Il doit être possible d'afficher l'image dans sa taille originale
+\end{itemize}
+\begin{itemize}
+  \item Il doit être possible de parcourir les dossiers et les
+    sous-dossiers
+  \item La distinction entre des fichiers et dossiers doit être clair
+  \item La récupération de la liste des fichiers des sous-dossiers
+    devra être faite uniquement lorsque c'est nécessaire (Pour cela,
+    le client appelera une fonction du serveur au moment du click sur
+    l'icône du dossier)
+  \item Il devra être possible de revenir au dossier parent (sauf à la racine)
+\end{itemize}
+\begin{itemize}
+  \item L'affichage des images ne doit pas provoquer de changement de page
+  \item L'affichage des images devra être sur la même page
+  \item L'affichage des images devra se faire en plein centre de la page
+  \item Il devra être possible de ``fermer'' l'affichage d'une image
+    pour revenir à la liste des images et dossiers
+\end{itemize}
+
+\newpage
+
+\section{Fonctionnalités bonus}
+
+La liste suivante présente des fonctionnalités dites ``bonus'' proposées pour
+être ajouté au module mais pas obligatoires.
+
+\begin{itemize}
+  \item Les chemins peuvent être envoyés de plusieurs façons (liste, string..)
+\end{itemize}
+\begin{itemize}
+  \item Un fichier CSS pourra être inseré afin de proposer un style graphique
+    par défaut
+  \item Le fichier CSS pourra être inseré grâce à une fonction du module
+\end{itemize}
+\begin{itemize}
+  \item Il pourra être possible d'afficher le nom des images
+  \item Il pourra être possible d'afficher l'extension des images
+\end{itemize}
+\begin{itemize}
+  \item Le module pourra avoir une interface (mli ou eliomi) décrivant les
+    fonctions utiles du modules uniquement
+\end{itemize}
+\begin{itemize}
+  \item Il pourra être possible de générer automatiquement les miniatures
+    grâce au binding d'\textbf{ImageMagick} pour OCaml
+  \item Cette génération pourra se faire grâce à une fonction du module
+  \item Cette génération pourra se faire uniquement lorsque les images
+    miniaturisées n'existent pas déjà afin d'alléger le processus
+  \item Cette génération pourra se faire au choix : jamais, au lancement
+    du serveur, au lancement du site web par les utilisateurs
+\end{itemize}
+\begin{itemize}
+  \item Il pourra y avoir un affichage des images d'une taille intermédiaire
+    pour éviter de charger des images trop lourdes et ces images seront
+    générées de la même manière que les miniatures
+\end{itemize}
+\begin{itemize}
+  \item L'utilisateur pourra à tout moment savoir à quel chemin il se trouve
+  \item L'utilisateur pourra cliquer sur les dossiers constituant le chemin
+    afin d'y retourner de manière rapide
+o\end{itemize}
+\begin{itemize}
+  \item Il pourra être possible de naviguer à travers les images en cliquant
+    sur des boutons
+  \item Il pourra être possible de naviguer à travers les images en utilisant
+    les flèches
+\end{itemize}
+
+%% --------------------------------------------------------------------- %%
+
+\chapter{Technique}
+
+\section{Technologies utilisées}
+
+Ce module utilisera \textbf{Ocsigen} et en particulier \textbf{Eliom}.\\
+\\
+Plus de détails sur Ocsigen et ses différents services :
+\begin{center}
+  \url{http://ocsigen.org/}
+\end{center}
+
+Plus de détails sur le choix de l'utilisation de cette technologie sur
+le cahier des charges du projet «~La Vie Est Un Jeu~» à l'URL suivante :\\
+\begin{center}
+  \url{http://eip.epitech.eu/2014/}
+\end{center}
+
+\section{Hébergement}
+
+Le module est hebergé et versionnés sur un dépôt GitHub :
+
+\begin{center}
+  \url{https://github.com/db0company/Gallery}
+\end{center}
+
+Le repot est sur le compte de l'auteur et est public.\\
+\\
+Ainsi, il sera possible pour les utilisateurs du module de parcourir les
+sources facilement mais aussi d'y contribuer en créant un \textit{fork}
+du dépôt et en y effectuant des \textit{pull-request}. Le système de
+tickets de l'interface sera aussi très utile.
+
+\newpage
+
+\section{Arborescence}
+
+\subsection{Fichiers nécéssaires à l'utilisation de Gallery}
+
+\begin{description}
+  \item[\texttt{gallery.eliom}]
+    est le module complet Gallery.
+  \item[\texttt{gallery.eliomi}]
+    est éventuellement l'interface du module Gallery.
+  \item[\texttt{pathname.ml} et \texttt{pathname.mli}]
+    est un module indépendant de Gallery et d'Ocsigen. Il
+    propose un type et des fonctions pour gérer les chemins
+    de fichiers et dossiers.
+  \item[\texttt{split.eliom}]
+    est un module Eliom permettant de découper une chaîne de
+    caractère en utilisant un caractère séparateur. Son
+    implémentation est différente côté client et côté serveur,
+    dû à l'absence du module \texttt{Str} côté client.
+\end{description}
+
+\subsection{Fichiers du dépôt}
+
+\begin{description}
+  \item[\texttt{static/css/gallery.css}]
+    est un fichier de style proposé par défaut pour la galerie.
+  \item[\texttt{example.eliom}]
+    est un fichier d'exemple avec un service simple utilisant
+    Gallery.
+  \item[\texttt{example.conf}]
+    est le fichier de configuration de l'exemple.
+  \item[\texttt{static/images}]
+    est un dossier contenant des images pour illustrer
+    l'exemple.
+  \item[\texttt{Makefile}]
+    est un Makefile d'exemple.
+  \item[\texttt{static/css/style.css}]
+    est un fichier de style proposé pour l'exemple.
+  \item[\texttt{doc/CDC\_Gallery.pdf}]
+    est le cahier des charges du module Gallery.
+  \item[\texttt{doc/CDC\_Gallery.tex}]
+    est la source de la documentation du module Gallery.
+\end{description}
+
+\section{Conventions de code et de style}
+
+\begin{itemize}
+  \item Coder proprement et séparer le code en de nombreuses fonctions et sous-fonctions.
+  \item Le projet utilise des modules.
+  \item Les types sont souvent abstraits.
+  \item Le projet comporte un ou plusieurs tests utilisant le module.
+  \item N'est exporté dans l'interface du module que ce qui est nécessaire.
+  \item Toutes les valeurs exportées sont justifiables.
+  \item Si un type est complexe, un module contenant ce type avec des fonctions outils
+  \item permettront de l'utiliser.
+\newpage
+  \item Le coding style suivant est utilisé :
+    \begin{itemize}
+      \item Header obligatoire contenant au minumum : Auteur (pseudo ou nom
+        complet, pourquoi pas un mail ou un site), Nom du module et
+        description.
+      \item Les lignes des fichiers ne doivent pas dépasser 80 colonnes.
+      \item Il doit y avoir un commentaire au dessus de chaque valeur du module
+        pour expliquer son rôle.
+      \item Au dessus de ce commentaire doit se trouver la signature de la
+        valeur en commentaire également, sauf si c'est trivial.
+      \item Une fonction ne doit pas contenir plus d'un filtrage. Appeler des
+        sous-fonctions.
+      \item Les commentaires doivent être alignés à gauche et faire toujours la
+        même longueur : 79 ou 80 colonnes.
+      \item L'interface associée au module doit contenir les mêmes commentaires
+        pour les valeurs sauf bien sûr la signature puisqu'elle est dans le
+        code directement.
+      \item Les sauts de lignes nombreux permettent d'aérer le code.
+    \end{itemize}
+\end{itemize}
+
+%% --------------------------------------------------------------------- %%
+
+\chapter{Planning}
+
+\section{Planning prévu}
+
+\begin{description}
+  \item[Jour 1] Réflexion sur le Module, Affichage simple d'images.
+  \item[Jour 2] CSS, Module de chemins.
+  \item[Jour 3] Ajout des dossiers et sous-dossiers.
+  \item[Jour 4] Affichage d'images en taille réelle, parcours d'images.
+  \item[Jour 5] Génération automatique de miniatures.
+\end{description}
+
+\section{Difficultés rencontrées}
+
+\begin{itemize}
+
+  \item \textbf{Installation d'Ocsigen} (16 Mai 2012)\\
+    \textbf{Tâche en cours :} Compilation classique du bundle Ocsigen sur un Ubuntu LTS 12.04 en 64 bits.\\
+    \textbf{Problème survenu :} /usr/bin/ld: cannot find -lgdbm\_compat\\
+    \textbf{Résolution :} Installation supplémentaire requise de \texttt{libgdbm-dev}.
+
+  \item \textbf{O'Closure pour Graffiti} (30 Mai 2012)\\
+    \textbf{Tâche en cours :} Réalisation du tutoriel des applications Eliom côté client et côté serveur.\\
+    \textbf{Problème survenu :} Il manque O'Closure.\\
+    \textbf{Résolution :} Réinstallation complète du bundle, à partir du dépôt Darcs et en indiquant l'option d'installation d'OClosure.
+
+  \item \textbf{Intégration de fichier statique} (5 Juin 2012)\\
+    \textbf{Tâche en cours :} Utilisation d'un fichier CSS pour styliser la galerie.\\
+    \textbf{Problème survenu :} \texttt{ocsigenserver: main: Fatal - Error in configuration file: Unexpected tag <static> inside <site dir=">}\\
+    \textbf{Résolution :} La balise <static> appartient à l'extension staticmod. Il faut donc le charger avant avec \texttt{<extension findlib-package=''ocsigenserver.ext.staticmod''/>}
+
+  \item \textbf{Intégration de fichier CSS} (11 Juin 2012)\\
+    \textbf{Tâche en cours :} Utilisation d'un fichier CSS pour styliser la galerie.\\
+    \textbf{Problème survenu :} Le CSS ne se charge pas du tout.\\
+    \textbf{Résolution :} Je suis passé à autre chose et ça s'est mis à marcher magiquement.
+
+  \item \textbf{Mise à jour d'Ocsigen} (11 Juin 2012)\\
+    \textbf{Problème survenu :} Sortie de la nouvelle version d'Ocsigen avec les nouveaux noms de module. Mise à jour complète puis modification de tout les fichiers.
+
+  \item \textbf{Utilisation d'Eliom et des interfaces de module} (19 Juin 2012)\\
+    \textbf{Tâche en cours :} Passage à Eliom pour utiliser \texttt{js\_of\_ocaml}. Modification des \lstinline{.ml} en \lstinline{.eliom} et ajout de compilation côté client.\\
+    \textbf{Problème survenu :} \texttt{Error: Could not find the .cmi file for interface gallery.mli.}\\
+    \textbf{Résolution :} Il n'est pour l'instant pas possible d'utiliser des interfaces de modules avec Eliom. On éspère que ce sera bientôt possible d'utiliser des \lstinline{.eliomi}.
+
+  \item \textbf{Remplacement d'une div par une autre} (27 Juin 2012)\\
+    \textbf{Tâche en cours :} Parcours de sous-dossiers, remplacement du dossier actuel par le contenu du nouveau dossier sur lequel on vient de cliquer.\\
+    \textbf{Problème survenu :} Comment accéder à un élément dans lequel on se trouve lorsque l'on utilise la syntaxe \lstinline{div ~a:[a\_onclick ...} ?\\
+    \textbf{Résolution :} Utilisation des arrow, de fonctions externes et de \texttt{getElementById}
+
+  \item \textbf{Récupération d'élément par son id} (2 Juillet 2012)\\
+    \textbf{Tâche en cours :} Parcours de sous-dossiers, remplacement du dossier actuel par le contenu du nouveau dossier sur lequel on vient de cliquer.\\
+    \textbf{Problème survenu :} Aucune erreur, ni pendant la compilation, ni pendant le lancement, ni dans la console Javacript. Et pourtant, il ne se passe rien.\\
+    \textbf{Résolution :} Il ne trouve pas l'élément parce que la page n'est pas complétement chargée. Il faut ajouter un \texttt{Eliom\_service.onload}.
+
+  \item \textbf{Utilisation des arrow} (3-9 Juillet 2012)\\
+    \textbf{Tâche en cours :} Parcours de sous-dossiers.\\
+    \textbf{Problème survenu :} Il y a peu d'explications sur les arrow sur le site puisque la fonctionnalité est encore au stade expérimental.\\
+    \textbf{Résolution :} Explication des arrow avec \texttt{try.ocaml}.
+
+  \item \textbf{Utilisation du module CamlImages} (9 Juillet 2012)\\
+    \textbf{Tâche en cours :} Génération automatique de miniatures.\\
+    \textbf{Problème survenu :} Le module CamlImages est difficile à compiler. Une fois celui-ci fonctionnel, on s'aperçoit que beaucoup de fonctions n'ont pas été implémentées pour beaucoup de format d'images.\\
+    \textbf{Résolution :} Utilisation des bindings d'ImageMagick pour OCaml.
+
+  \item \textbf{Str.split côté client} (11 Juillet 2012)\\
+    \textbf{Tâche en cours :} Portage de l'affichage du contenu d'un dossier côté client.\\
+    \textbf{Problème survenu :} Le module \texttt{Str} n'existe pas côté client.\\
+    \textbf{Résolution :} Recode complet de la fonction \texttt{Str.split}.
+
+  \item \textbf{Récupération de services côté client} (11 Juillet 2012)\\
+    \textbf{Tâche en cours :} Parcours de fichiers et dossiers, lien vers un sous-sous-dossier. La génération de l'affichage a dû être entièrement re-pensé pour le côté client puisque les contraintes sont complétement différentes côté client et côté serveur.\\
+    \textbf{Problème survenu :} Comment faire en sorte d'appeler la fonction côté serveur qui récupérera la liste des fichiers si l'on a pas accès au service ? \\
+    \textbf{Résolution :} En cours.
+
+  \item \textbf{Recupération des fichiers dans le static\_dir} (16 Juillet 2012)\\
+    \textbf{Problème survenu :} Les fichiers doivent forcément être dans le static\_dir. On doit parcourir le dossier avec opendir. Il faut donc pouvoir récupérer le path du static\_dir. \\
+    \textbf{Résolution :} En cours.
+
+\end{itemize}
+
+\section{Planning final}
+
+Dead-line finale Galerie : 1 Aôut 2012.\\
+
+%% --------------------------------------------------------------------- %%
+
+\chapter{À propos}
+
+\section{Auteur}
+
+\begin{itemize}
+  \item \textbf{Barbara Lepage}
+  \item \href{mailto:db0company@gmail.com}{db0company@gmail.com}
+  \item \url{http://db0.fr/}
+\end{itemize}
+
+\section{La Vie Est Un Jeu}
+
+«~La Vie Est Un Jeu~» est un projet sur trois ans dans le cadre des «~Epitech
+Innovative Projects~» mené par un groupe de dix étudiants.\\
+\\
+Ce projet, sous forme d’un site web et d’applications mobiles, propose à ses
+utilisateurs de pimenter leur quotidien. Pour cela, on leur propose de manière
+ludique de se fixer des objectifs, les réaliser, les collectionner et enfin les
+partager.\\
+C’est donc à la fois un jeu et un réseau social, destiné à tous les âges !\\
+\\
+Pus de détails sur le projet sont disponibles sur le site vitrine du projet :\\
+\begin{center}
+  \url{http://eip.epitech.eu/2014/}
+\end{center}
+
+\newpage
+
+\section{Le Groupe}
+
+\begin{description}
+  \item[Lepage Barbara] lepage.barbara@gmail.com
+  \item[Caradec Guillaume] guillaume.caradec@gmail.com
+  \item[Corsin Simon] simoncorsin@gmail.com
+  \item[Glorieux François] fra.glorieux@gmail.com
+  \item[Klarman Nicolas] nickoas@gmail.com
+  \item[Lassagne David] david.lassagne@gmail.com
+  \item[Louvigny Guillaume] guillaume@louvigny.fr
+  \item[El-Outmani Youssef] youssef.eloutmani@gmail.com
+  \item[Le-Cor Wilfried] wilfried.lecor@gmail.com
+  \item[Lenormand Frank] lenormf@gmail.com
+\end{description}
+
+Le détail des rôles de chacun des membres du groupe est disponible sur
+le cahier des charges à l'URL suivante :\\
+\begin{center}
+  \url{http://eip.epitech.eu/2014/}
+\end{center}
+
+%% --------------------------------------------------------------------- %%
+
+\end{document}
