@@ -2,6 +2,7 @@
 ## Sample Makefile for eliom application.
 
 APP_NAME := gallery
+STATICDIR := ./static
 
 ## Packages required to build the server part of the application
 
@@ -48,7 +49,7 @@ export ELIOM_TYPE_DIR   := .
 
 #####################################
 
-all: byte opt
+all: byte opt install
 byte:: ${APP_NAME}.cma ${APP_NAME}.js
 opt:: ${APP_NAME}.cmxs ${APP_NAME}.js
 
@@ -127,8 +128,6 @@ depend: .depend
 include .depend
 
 ## installation #########
-
-STATICDIR      := /tmp/static
 
 $(STATICDIR):
 	mkdir -p $@

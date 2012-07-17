@@ -118,28 +118,41 @@ let show_thumbnail path =
 
 {server{
 
+(* /!\ todo: ["static"] must be replace by the static_dir *)
+(* relative_to_real : Pathname.t -> string                                    *)
+(* Take a path relative to the static_dir and return the real path            *)
+let relative_to_real path =
+  (Pathname.to_string (Pathname.concat
+			 (Pathname.new_path_of_list ["static"]) path))
+
+}}
+
+{server{
+
 (* img_dir_list : Pathname.t -> (string list * string list)                   *)
 (* Browse the given folder name and return two lists :                        *)
 (* - The first list contains images filenames                                 *)
 (* - The second list contains directories filenames                           *)
 let img_dir_list path =
-  let no_hidden_file filename = filename.[0] != '.' in
+  let no_hidden_file filename = filename.[0] != '.'
+  and is_directory file_path =
+    Sys.is_directory (relative_to_real file_path) in
   let rec aux handle acc =
     try
       let file = Unix.readdir handle
       in aux handle (file::acc)
     with End_of_file -> acc in
-  let handle = Unix.opendir (Pathname.to_string path) in
+  let handle = Unix.opendir (relative_to_real path) in
   let filelist = aux handle []
   in (List.filter
         (fun filename ->
 	  let file_path = Pathname.extend_file path filename in
-	  no_hidden_file filename && is_img file_path) filelist,
+	  no_hidden_file filename && is_img file_path
+	  && is_directory file_path == false) filelist,
       List.filter
         (fun filename ->
  	  let file_path = Pathname.extend_file path filename in
-	  no_hidden_file filename
-	  && Sys.is_directory (Pathname.to_string file_path)) filelist
+	  no_hidden_file filename && is_directory file_path) filelist
   )
 
 }}
@@ -166,6 +179,37 @@ let client_to_server_service =
 (* Gallery functions                                                          *)
 (* ************************************************************************** *)
 
+(* ************************************************************************** *)
+(* Display full size images                                                   *)
+(* ************************************************************************** *)
+
+{client{
+
+  let fullsize_handler clicked_thumbnail_s =
+    let clicked_thumbnail = To_dom.of_li clicked_thumbnail_s in
+    let open Event_arrows in
+	let plop _ = Dom_html.window##alert(Js.string "Plop") in
+	let _ = run (click clicked_thumbnail >>> arr plop) () in
+	()
+}}
+
+(* ************************************************************************** *)
+(* Display thumbnails Client Side                                             *)
+(* ************************************************************************** *)
+
+{client{
+
+let display_image_thumbnail path filename  =
+  let file_path = Pathname.extend_file path filename in
+  let elem = li [show_thumbnail file_path; pcdata filename] in
+  let _ = () in
+  elem
+
+}}
+
+(* ************************************************************************** *)
+(* Directory browsing                                                         *)
+(* ************************************************************************** *)
 
 {client{
 
@@ -186,11 +230,7 @@ let rec display_img_client path (file_list, dir_list) =
 	    ("dir_" ^ filename) (* todo: miss service here*) in
   	    li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
   	      [show_img directory_thumb_path; pcdata filename]) dir_list)
-     @ (List.map
-     	  (fun filename ->
-     	    let file_path = Pathname.extend_file path filename in
-     	    li [show_thumbnail file_path; pcdata filename]) file_list)
-    )]
+	@ (List.map (display_image_thumbnail path) file_list))]
 
 (* dir_handler_client : Pathname.t -> string -> post_coservice' -> unit       *)
 (* Take the path, the directory button identifier and the                     *)
@@ -229,40 +269,60 @@ let dir_handler_server path =
 
 }}
 
+(* ************************************************************************** *)
+(* Display thumbnails Server Side                                             *)
+(* ************************************************************************** *)
+
 {server{
 
-(* display_img : path -> (string list, string list) -> ul                     *)
-(* Take a path and return a list of pictures and directory                    *)
-let display_img_server path (file_list, dir_list) =
-  let directory_thumb_path = (Pathname.extend path directory_thumbnail) in
-  div ~a:[a_id "gallery_ct"]
-    [ul ((List.map
-	(fun filename ->
-	  let _ = Eliom_service.onload
-	    (dir_handler_server (Pathname.extend_file path filename)) in
-	  li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
-	    [show_img directory_thumb_path; pcdata filename]) dir_list) @
-	(List.map
-	   (fun filename ->
- 	     let file_path = Pathname.extend_file path filename in
-	     li [show_thumbnail file_path; pcdata filename]) file_list))]
+let display_directories_thumbnail directory_thumb_path path filename =
+  let _ = Eliom_service.onload
+    (dir_handler_server (Pathname.extend_file path filename)) in
+  li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
+    [show_img directory_thumb_path; pcdata filename]
+
+let display_image_thumbnail path filename  =
+  let file_path = Pathname.extend_file path filename in
+  let elem = li [show_thumbnail file_path; pcdata filename] in
+  let _ = Eliom_service.onload {{fullsize_handler %elem}} in
+  elem
 
 }}
 
 {server{
 
+(* display_img : path -> (string list, string list) -> ul                     *)
+(* Take a path and return a list of pictures and directory                    *)
+let display_images_server path (file_list, dir_list) =
+  let directory_thumb_path = (Pathname.extend path directory_thumbnail) in
+  div ~a:[a_id "gallery_ct"]
+    [ul ((List.map (display_directories_thumbnail
+		      directory_thumb_path path) dir_list) @
+	    (List.map (display_image_thumbnail path) file_list))]
+
+}}
+
+(* ************************************************************************** *)
+(* Viewer                                                                     *)
+(* ************************************************************************** *)
+
+{server{
+
+let default_gallery_title = "Gallery"
+
 (* viewer : string list -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt    *)
 (* viewer_str : string -> [> HTML5_types.div ] Eliom_pervasives.HTML5.elt     *)
 (* viewer_path : Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt *)
 (* Return a div containing a pretty displaying of a gallery                   *)
-let viewer_path ?title:(t="") path =
+let viewer_path ?title:(t=default_gallery_title) path =
   div ~a:[a_class["gallery"]; a_id "gallery"]
-    [h3 ~a:[a_id "title"] [pcdata t]; display_img_server path (img_dir_list path)]
+    [h3 ~a:[a_id "title"] [pcdata t];
+     display_images_server path (img_dir_list path)]
 
-let viewer ?title:(t="") list_path =
+let viewer ?title:(t=default_gallery_title) list_path =
   viewer_path ~title:t
     (Pathname.new_path_of_list list_path)
-and viewer_str ?title:(t="") str_path =
+and viewer_str ?title:(t=default_gallery_title) str_path =
   viewer_path ~title:t
     (Pathname.new_path_of_string str_path)
 
