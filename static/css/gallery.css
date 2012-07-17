@@ -1,7 +1,7 @@
 /* ************************************************************************* */
 /* Project: Gallery                                                          */
 /* Description: CSS stylesheet for Gallery Ocsigen module                    */
-/* Author: db0 /db0company@gmail.com, http://db0.fr//                        */
+/* Author: db0 /db0company@gmail.com, http://db0.fr/                         */
 /* Latest Version is on GitHub: https://github.com/db0company/Gallery        */
 /* ************************************************************************* */
 
@@ -11,8 +11,7 @@
 /* - Complementary Color:                                                    */
 /*   FF7A00    BF7530    A65000    FF9B40    FFB673                          */
 
-.gallery
-{
+.gallery {
     width: 96%;
     margin: 2%;
     background-color: #C8E7FF;
@@ -20,32 +19,27 @@
     font-size: 0.8em;
 }
 
-.gallery, .gallery li
-{
+.gallery, .gallery li {
     border: 1px solid #3274A6;
     border-radius: 10px 10px;
     -moz-border-radius: 10px;
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#9BD3FF), to(#DBF0FF));
 }
 
-.gallery:before, .gallery:after
-{
+.gallery:before, .gallery:after {
     display: table;
     content: "";
 }
-.gallery:after
-{
+.gallery:after {
     clear: both;
 }
 
-.gallery ul
-{
+.gallery ul {
     margin: 0;
     padding: 0;
 }
 
-.gallery li
-{
+.gallery li {
     list-style-type: none;
     list-style-position: inside;
     border-color: #87A7BF;
@@ -55,13 +49,11 @@
     background-color: #9BD3FF;
 }
 
-.gallery .dir
-{
+.gallery .dir {
     border-color: #9BD3FF;
 }
 
-.gallery li:hover
-{
+.gallery li:hover {
     border-color: #A65000;
     border-width: 2px;
     margin: 9px;
@@ -71,24 +63,21 @@
     color: #A65000;
 }
 
-.gallery img
-{
+.gallery img {
     display: block;
     width: 100px;
     height: 100px;
     padding-bottom: 10px;
 }
 
-.gallery h3
-{
+.gallery h3 {
     text-align: left;
     margin: 0;
     margin-left: 2%;
     margin-top: 1%;
 }
 
-.gallery .path
-{
+.gallery .path {
     text-align: left;
     letter-spacing: 0.1em;
     font-size: 0.8em;
@@ -96,4 +85,60 @@
     margin: 0;
     padding: 0;
     margin-left: 4%;
+}
+
+.fullsize {}
+
+.fullsize .overlayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: 100%;
+    min-height: 5000px;
+    background-color: #9BD3FF;
+    opacity: 0.8;
+}
+
+.fullsize .box {
+    margin: auto;
+    top: 250px;
+    z-index: 101;
+    width: 620px;
+}
+
+.fullsize .image, .fullsize .details {
+    border: 1px solid #FF7A00;
+    border-radius: 10px 10px;
+    -moz-border-radius: 10px;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FFB673), to(#FFFFFF));
+}
+
+.fullsize .image {
+    position: absolute;
+    background-color: #fff;
+    margin-top: 40px;
+    padding: 10px;
+    display: block;
+    width: 600px;
+    z-index: 102;
+}
+
+.fullsize .details {
+    position: absolute;
+    z-index: 103;
+    background-color: #fff;
+    width: 610px;
+    height: 20px;
+    overflow: auto;
+    padding: 5px;
+    font-size: 0.8em;
+    color: #A65000;
+}
+
+.fullsize .close_button {
+    float: right;
+    font-weight: bold;
+    padding-right: 5px;
+    font-size: 0.7em;
 }

@@ -14,7 +14,7 @@ open Eliom_parameter
 (* ************************************************************************** *)
 
 (* This function must be called in the HTML header with the directory where   *)
-(* the "gallery.css" is as an argument.                                       *)
+(* the gallery css file is as an argument.                                    *)
 val load_css : string list -> [> Html5_types.link ] Eliom_content_core.Html5.elt
 val load_css_str : string -> [> Html5_types.link ] Eliom_content_core.Html5.elt
 val load_css_path : Pathname.t -> [> Html5_types.link ] Eliom_content_core.Html5.elt
