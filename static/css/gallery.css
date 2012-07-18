@@ -20,6 +20,7 @@
 }
 
 .gallery, .gallery li {
+    text-align: center;
     border: 1px solid #3274A6;
     border-radius: 10px 10px;
     -moz-border-radius: 10px;
@@ -74,7 +75,7 @@
     text-align: left;
     margin: 0;
     margin-left: 2%;
-    margin-top: 1%;
+   margin-top: 1%;
 }
 
 .gallery .path {
@@ -87,7 +88,13 @@
     margin-left: 4%;
 }
 
-.fullsize {}
+/* ************************************************************************* */
+/* Full size image                                                           */
+/* ************************************************************************* */
+
+.fullsize {
+    text-align: center;
+}
 
 .fullsize .overlayer {
     position: absolute;
@@ -101,7 +108,8 @@
 }
 
 .fullsize .box {
-    margin: auto;
+    position: absolute;
+    margin-left: 35%;
     top: 100px;
     z-index: 101;
     width: 620px;
