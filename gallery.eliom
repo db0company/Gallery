@@ -154,6 +154,10 @@
 }}
 
 (* ************************************************************************** *)
+(* Ocsigen various tools                                                      *)
+(* ************************************************************************** *)
+
+(* ************************************************************************** *)
 (* Client call server side function                                           *)
 (* ************************************************************************** *)
 
@@ -175,9 +179,30 @@
 (* Gallery functions                                                          *)
 (* ************************************************************************** *)
 
+{client{
+let get_element_by_id id =
+  let of_opt e = Js.Opt.get e (fun _ -> assert false) in
+  of_opt (Dom_html.document##getElementById (Js.string id))
+}}
+
 (* ************************************************************************** *)
 (* Display full size images                                                   *)
 (* ************************************************************************** *)
+
+{client{
+  let close_image_handler close_button =
+    let remove_div _ =
+      Dom.removeChild (Dom_html.document##body)
+	(get_element_by_id "fullsize") in
+    let open Event_arrows in
+        let _ = run (clicks (To_dom.of_div close_button)
+		       (arr remove_div)) () in ()
+}}
+
+{server{
+  let close_image_handler close_button =
+    {{close_image_handler %close_button}}
+}}
 
 {shared{
 
@@ -186,15 +211,16 @@
       if (String.length d) = 0
       then Pathname.no_extension path
       else d
-    and pathlist = Pathname.to_list path in
-    div ~a:[a_class ["fullsize"]]
+    and pathlist = Pathname.to_list path
+    and close_button = div ~a:[a_class ["close_button"]] [pcdata "X"] in
+    let _ = close_image_handler close_button in
+    div ~a:[a_class ["fullsize"]; a_id "fullsize"]
       [div ~a:[a_class ["overlayer"]] [];
        div ~a:[a_class ["box"]]
          [img ~a:[a_class ["image"]] ~alt:description
              ~src:(make_uri ~service:(Eliom_service.static_dir ()) pathlist) ();
           div ~a:[a_class ["details"]]
-            [pcdata description;
-             div ~a:[a_class ["close_button"]] [pcdata "X"]]]]
+            [pcdata description; close_button]]]
 
 }}
 
@@ -202,12 +228,12 @@
 
   let fullsize_handler clicked_thumbnail_s path filename =
     let clicked_thumbnail = To_dom.of_li clicked_thumbnail_s in
+    let fullsize_div =
+      fullsize_image (Pathname.extend_file path filename) in
+    let append_div div _ =
+      Dom.appendChild (Dom_html.document##body)
+        (Eliom_content.Html5.To_dom.of_div div) in
     let open Event_arrows in
-        let fullsize_div =
-          fullsize_image (Pathname.extend_file path filename) in
-        let append_div div _ =
-          Dom.appendChild (Dom_html.document##body)
-            (Eliom_content.Html5.To_dom.of_div div) in
         let _ = run (clicks clicked_thumbnail
                        (arr (append_div fullsize_div))) () in ()
 }}

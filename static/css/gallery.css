@@ -102,7 +102,7 @@
 
 .fullsize .box {
     margin: auto;
-    top: 250px;
+    top: 100px;
     z-index: 101;
     width: 620px;
 }
@@ -111,12 +111,11 @@
     border: 1px solid #FF7A00;
     border-radius: 10px 10px;
     -moz-border-radius: 10px;
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FFB673), to(#FFFFFF));
 }
 
 .fullsize .image {
     position: absolute;
-    background-color: #fff;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FFFFFF), to(#FFB673));
     margin-top: 40px;
     padding: 10px;
     display: block;
@@ -133,7 +132,8 @@
     overflow: auto;
     padding: 5px;
     font-size: 0.8em;
-    color: #A65000;
+    color: #FF7A00;
+    font-weight: bold;
 }
 
 .fullsize .close_button {
@@ -141,4 +141,5 @@
     font-weight: bold;
     padding-right: 5px;
     font-size: 0.7em;
+    cursor: pointer;
 }
