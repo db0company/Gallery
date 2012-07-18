@@ -51,36 +51,36 @@ La liste suivante présente les fonctionnalités minimales requises pour
 que ce module soit terminé.
 
 \begin{itemize}
-  \item Gallery doit être un module 
-  \item Il doit être complétement indépendant du site web sur lequel
-    il se trouve
-  \item Il ne doit donc pas avoir besoin de connaître les services
-    existants
-  \item Il ne doit pas créer ses propres URL
-  \item Il doit utiliser Eliom
+  \item \yes{Gallery doit être un module}
+  \item \yes{Il doit être complétement indépendant du site web sur lequel
+    il se trouve}
+  \item \yes{Il ne doit donc pas avoir besoin de connaître les services
+    existants}
+  \item \yes{Il ne doit pas créer ses propres URL}
+  \item \yes{Il doit utiliser Eliom}
 \end{itemize}
 \begin{itemize}
-  \item Il doit y avoir une fonction prenant en paramètre un chemin et
-    renvoyant un élément de type div contenant la galerie
-  \item L'affichage doit contenir des miniatures des images
-  \item Il doit être possible d'afficher l'image dans sa taille originale
+  \item \yes{Il doit y avoir une fonction prenant en paramètre un chemin et
+    renvoyant un élément de type div contenant la galerie}
+  \item \yes{L'affichage doit contenir des miniatures des images}
+  \item \yes{Il doit être possible d'afficher l'image dans sa taille originale}
 \end{itemize}
 \begin{itemize}
-  \item Il doit être possible de parcourir les dossiers et les
-    sous-dossiers
-  \item La distinction entre des fichiers et dossiers doit être clair
-  \item La récupération de la liste des fichiers des sous-dossiers
+  \item \ongoing{Il doit être possible de parcourir les dossiers et les
+    sous-dossiers}
+  \item \yes{La distinction entre des fichiers et dossiers doit être claire}
+  \item \yes{La récupération de la liste des fichiers des sous-dossiers
     devra être faite uniquement lorsque c'est nécessaire (Pour cela,
     le client appelera une fonction du serveur au moment du click sur
-    l'icône du dossier)
-  \item Il devra être possible de revenir au dossier parent (sauf à la racine)
+    l'icône du dossier)}
+  \item \nobox{Il devra être possible de revenir au dossier parent (sauf à la racine)}
 \end{itemize}
 \begin{itemize}
-  \item L'affichage des images ne doit pas provoquer de changement de page
-  \item L'affichage des images devra être sur la même page
-  \item L'affichage des images devra se faire en plein centre de la page
-  \item Il devra être possible de ``fermer'' l'affichage d'une image
-    pour revenir à la liste des images et dossiers
+  \item \yes{L'affichage des images ne doit pas provoquer de changement de page}
+  \item \yes{L'affichage des images devra être sur la même page}
+  \item \yes{L'affichage des images devra se faire en plein centre de la page}
+  \item \yes{Il devra être possible de ``fermer'' l'affichage d'une image
+    pour revenir à la liste des images et dossiers}
 \end{itemize}
 
 \newpage
@@ -91,45 +91,45 @@ La liste suivante présente des fonctionnalités dites ``bonus'' proposées pour
 être ajouté au module mais pas obligatoires.
 
 \begin{itemize}
-  \item Les chemins peuvent être envoyés de plusieurs façons (liste, string..)
+  \item \yes{Les chemins peuvent être envoyés de plusieurs façons (liste, string..)}
 \end{itemize}
 \begin{itemize}
-  \item Un fichier CSS pourra être inseré afin de proposer un style graphique
-    par défaut
-  \item Le fichier CSS pourra être inseré grâce à une fonction du module
+  \item \yes{Un fichier CSS pourra être inseré afin de proposer un style graphique
+    par défaut}
+  \item \yes{Le fichier CSS pourra être inseré grâce à une fonction du module}
 \end{itemize}
 \begin{itemize}
-  \item Il pourra être possible d'afficher le nom des images
-  \item Il pourra être possible d'afficher l'extension des images
+  \item \yes{Il pourra être possible d'afficher le nom des images}
+  \item \yes{Il pourra être possible d'afficher l'extension des images}
 \end{itemize}
 \begin{itemize}
-  \item Le module pourra avoir une interface (mli ou eliomi) décrivant les
-    fonctions utiles du modules uniquement
+  \item \nobox{Le module pourra avoir une interface (mli ou eliomi) décrivant les
+    fonctions utiles du modules uniquement}
 \end{itemize}
 \begin{itemize}
-  \item Il pourra être possible de générer automatiquement les miniatures
-    grâce au binding d'\textbf{ImageMagick} pour OCaml
-  \item Cette génération pourra se faire grâce à une fonction du module
-  \item Cette génération pourra se faire uniquement lorsque les images
-    miniaturisées n'existent pas déjà afin d'alléger le processus
-  \item Cette génération pourra se faire au choix : jamais, au lancement
-    du serveur, au lancement du site web par les utilisateurs
+  \item \nobox{Il pourra être possible de générer automatiquement les miniatures
+    grâce au binding d'\textbf{ImageMagick} pour OCaml}
+  \item \nobox{Cette génération pourra se faire grâce à une fonction du module}
+  \item \nobox{Cette génération pourra se faire uniquement lorsque les images
+    miniaturisées n'existent pas déjà afin d'alléger le processus}
+  \item \nobox{Cette génération pourra se faire au choix : jamais, au lancement
+    du serveur, au lancement du site web par les utilisateurs}
 \end{itemize}
 \begin{itemize}
-  \item Il pourra y avoir un affichage des images d'une taille intermédiaire
+  \item \nobox{Il pourra y avoir un affichage des images d'une taille intermédiaire
     pour éviter de charger des images trop lourdes et ces images seront
-    générées de la même manière que les miniatures
+    générées de la même manière que les miniatures}
 \end{itemize}
 \begin{itemize}
-  \item L'utilisateur pourra à tout moment savoir à quel chemin il se trouve
-  \item L'utilisateur pourra cliquer sur les dossiers constituant le chemin
-    afin d'y retourner de manière rapide
-o\end{itemize}
+  \item \yes{L'utilisateur pourra à tout moment savoir à quel chemin il se trouve}
+  \item \nobox{L'utilisateur pourra cliquer sur les dossiers constituant le chemin
+    afin d'y retourner de manière rapide}
+\end{itemize}
 \begin{itemize}
-  \item Il pourra être possible de naviguer à travers les images en cliquant
-    sur des boutons
-  \item Il pourra être possible de naviguer à travers les images en utilisant
-    les flèches
+  \item \nobox{Il pourra être possible de naviguer à travers les images en cliquant
+    sur des boutons}
+  \item \nobox{Il pourra être possible de naviguer à travers les images en utilisant
+    les flèches}
 \end{itemize}
 
 %% --------------------------------------------------------------------- %%
