@@ -64,6 +64,8 @@ let _ =
 		  div ~a:[a_class ["page"]]
 		  [page_content_1 ();
 		   Gallery.viewer ~title:"My pictures are so pretty" ["images"];
+		   page_content_1 ();
+		   Gallery.viewer ["images";"funny"];
 		   page_content_2 ()]
 		 ])
 	)
