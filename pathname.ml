@@ -90,7 +90,7 @@ let filename (l, _) = List.hd l
 (* Example: "foo/bar/baz" -> "foo/bar"                                        *)
 let parent (l, _) =
   let new_list = List.tl l in
-  (new_list, String.concat sep new_list)
+  (new_list, String.concat sep (List.rev new_list))
 
 (* extension : t -> string                                                    *)
 (* Return the extansion of the given filename                                 *)
