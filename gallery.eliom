@@ -291,42 +291,44 @@ let get_element_by_id id =
 (* display_img : string -> (string list, string list) -> ul                   *)
 (* Take a path, a list of directories and a list of files                     *)
 (* and return a div containing a pretty displaying of them.                   *)
-  let rec display_img_client data (file_list, dir_list) =
-    let _ = dir_handler_client (chpath data (Pathname.parent (path data))) "dir_parent"
-            (* todo: miss service here*) in
+  let rec display_img_client data service (file_list, dir_list) =
     let directory_thumb_path = (Pathname.extend (path data) directory_thumbnail) in
+    let parent =
+      let tmp = li ~a:[a_class ["dir"]; a_id ("dir_parent")]
+        [show_img directory_thumb_path; pcdata "< Back"] in
+      let _ = dir_handler_client (chpath data (Pathname.parent (path data)))
+	tmp service in tmp in
     div ~a:[a_id ("gallery_ct" ^ (single_id data))]
       [p ~a:[a_class ["path"]] [pcdata (Pathname.to_string (path data))];
-       ul ([li ~a:[a_class ["dir"]; a_id ("dir_parent")]
-               [show_img directory_thumb_path; pcdata "< Back"]]
-           @ (List.map
+       ul (parent::(List.map
                 (fun filename ->
-                  let _ = dir_handler_client
+                  let monli = li ~a:[a_class ["dir"]]
+                    [show_img directory_thumb_path; pcdata filename] in
+		  dir_handler_client
 		    (chpath data (Pathname.extend_file (path data) filename))
-                    ("dir_" ^ filename) (* todo: miss service here*) in
-                  li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
-                    [show_img directory_thumb_path; pcdata filename]) dir_list)
+                    monli service;
+		  monli
+		) dir_list)
            @ (List.map (display_image_thumbnail data) file_list))]
 
 (* dir_handler_client : Pathname.t -> string -> post_coservice' -> unit       *)
 (* Take the path, the directory button identifier and the                     *)
 (* client_to_server_service. It set the handler associeted with the directory *)
 (* button, so when you click it, it's showing its content.                    *)
-  and dir_handler_client data dir_id service =
+  and dir_handler_client data elem service =
     let get_list_from_server () =
       Eliom_client.call_caml_service
         ~service:service () ((Pathname.to_string (path data)), (single_id data)) in
     let replace_dir (t, file_lists) _ =
       let gallery_div = get_element_by_id ("gallery" ^ (single_id data))
       and to_replace = get_element_by_id ("gallery_ct" ^ (single_id data))
-      and new_div = display_img_client data file_lists in
+      and new_div = display_img_client data service file_lists in
       (Dom.replaceChild gallery_div (To_dom.of_div new_div) to_replace) in
     let value_binding _ =
       ignore (Lwt.bind (get_list_from_server ())
                 (fun result -> Lwt.return (replace_dir result ()))); () in
     let open Event_arrows in
-        let elem = (get_element_by_id dir_id) in
-        let _ = run (click elem >>> (arr value_binding)) () in ()
+    let _ = run (click (To_dom.of_li elem) >>> (arr value_binding)) () in ()
 
 }}
 
@@ -335,9 +337,8 @@ let get_element_by_id id =
 (* dir_handler_server : string -> handler                                     *)
 (* Take the directory id and return a js action that replace it by its        *)
 (* contents when clicked                                                      *)
-  let dir_handler_server data =
-    let dir_id = "dir_" ^ (Pathname.filename (path data)) in
-    {{ dir_handler_client %data %dir_id %client_to_server_service }}
+  let dir_handler_server theli data =
+    {{ dir_handler_client %data %theli %client_to_server_service }}
 
 }}
 
@@ -348,10 +349,12 @@ let get_element_by_id id =
 {server{
 
   let display_directories_thumbnail directory_thumb_path data filename =
-    let _ = Eliom_service.onload
-      (dir_handler_server (chpath data (Pathname.extend_file (path data) filename))) in
-    li ~a:[a_class ["dir"]; a_id ("dir_" ^ filename)]
+    let monli = li ~a:[a_class ["dir"]]
       [show_img directory_thumb_path; pcdata filename]
+    in
+    let _ = Eliom_service.onload
+      (dir_handler_server monli (chpath data (Pathname.extend_file (path data) filename))) in
+    monli
 
    let display_image_thumbnail data filename  =
      let file_path = Pathname.extend_file (path data) filename in
