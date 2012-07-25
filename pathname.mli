@@ -76,3 +76,6 @@ val extension : t -> string
 (* Return filename without its extension                                      *)
 (* Example: "/foo/bar/document.pdf" -> "document"                             *)
 val no_extension : t -> string
+
+(* Check if the path is empty                                                 *)
+val is_empty : t -> bool

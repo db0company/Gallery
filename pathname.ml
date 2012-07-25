@@ -89,7 +89,9 @@ let filename (l, _) = List.hd l
 (* Return the path without the last element                                   *)
 (* Example: "foo/bar/baz" -> "foo/bar"                                        *)
 let parent (l, _) =
-  let new_list = List.tl l in
+  let new_list = match l with
+    | h::t	-> t
+    | []	-> [] in
   (new_list, String.concat sep (List.rev new_list))
 
 (* extension : t -> string                                                    *)
@@ -109,3 +111,9 @@ let no_extension path =
   let size =
     try (String.rindex f '.') with Not_found -> -1
   in try String.sub f 0 size with Invalid_argument s -> f
+
+(* is_empty : t -> bool                                                       *)
+(* Check if the path is empty                                                 *)
+let is_empty (l, _) = match l with
+  | [] -> true
+  | _  -> false
