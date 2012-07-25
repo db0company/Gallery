@@ -20,24 +20,38 @@
 
 {shared{
 
+(* This simple module is managing Galleries data we need all along Gallery.   *)
+
 module type DATA =
   sig
     type t
 
-    val ndata : Pathname.t -> string -> t
+(* ndata create a new data containing the original path, the current path and *)
+(* the single id.                                                             *)
+    val ndata : Pathname.t -> Pathname.t -> string -> t
+
+(* These functions return informations in the data                            *)
+    val original_path : t -> Pathname.t
     val path : t -> Pathname.t
     val single_id : t -> string
+
+(* chpath modify the current path inside the data                             *)
     val chpath : t -> Pathname.t -> t
+
+(* full_path return the concatenation of the original and the current pathes  *)
+    val full_path : t -> Pathname.t
   end
 
 module Data : DATA =
   struct
-    type t = (Pathname.t * string)
+    type t = (Pathname.t * Pathname.t * string)
 
-    let ndata p s = (p, s)
-    let path (p, _) = p
-    let single_id (_, s) = s
-    let chpath (p, s) np = (np, s)
+    let ndata o p s = (o, p, s)
+    let original_path (o, _, _) = o
+    let path (_, p, _) = p
+    let single_id (_, _, s) = s
+    let chpath (o, p, s) np = (o, np, s)
+    let full_path (o, p, _) = Pathname.concat o p
   end
 
 open Data
@@ -155,12 +169,13 @@ open Data
 
 {server{
 
-(* img_dir_list : Pathname.t -> (string list * string list)                   *)
+(* img_dir_list : data -> (string list * string list)                         *)
 (* Browse the given folder name and return two lists :                        *)
 (* - The first list contains images filenames                                 *)
 (* - The second list contains directories filenames                           *)
-  let img_dir_list path =
-    let no_hidden_file filename = filename.[0] != '.'
+  let img_dir_list data =
+    let path = full_path data
+    and no_hidden_file filename = filename.[0] != '.'
     and is_directory file_path =
       Sys.is_directory (relative_to_real file_path) in
     let rec aux handle acc =
@@ -196,12 +211,14 @@ open Data
 (* files and directory inside this path, so the client can display it.        *)
   let client_to_server_service =
     Eliom_registration.Ocaml.register_post_coservice'
-      ~post_params:(string "path" ** string "single_id")
-      (fun () (str_path, single_id) ->
-        let _ = print_endline ("Request files on server side : " ^ str_path) in
-        let path = Pathname.new_path_of_string str_path in
-        Lwt.return ((ndata (Pathname.new_path_of_string str_path) single_id),
-		    (img_dir_list path)))
+      ~post_params:(string "original_path" ** string "path" ** string "single_id")
+      (fun () (op, (sp, si)) ->
+        let _ = print_endline ("Request files on server side original path : " ^ op) in
+        let _ = print_endline ("Request files on server side specific path : " ^ sp) in
+	let spp = Pathname.new_path_of_string sp
+	and opp = Pathname.new_path_of_string op in
+	let data = (ndata opp spp si) in
+        Lwt.return (data, (img_dir_list data)))
 
 }}
 
@@ -210,6 +227,10 @@ open Data
 (* ************************************************************************** *)
 
 {client{
+
+(* get_element_by_id : string -> Js elt                                       *)
+(* Return the Js form of the element corresponding to the unique identifier   *)
+(* The usage of this function is due to a bad design                          *)
 let get_element_by_id id =
   let of_opt e = Js.Opt.get e (fun _ -> assert false) in
   of_opt (Dom_html.document##getElementById (Js.string id))
@@ -220,22 +241,38 @@ let get_element_by_id id =
 (* ************************************************************************** *)
 
 {client{
-  let close_image_handler close_button =
+
+(* close_image_handler : div -> div -> unit                                   *)
+(* Events handler when the cross button to close a fullsize image is clicked  *)
+  let close_image_handler close_button fullsize_div =
     let remove_div _ =
-      Dom.removeChild (Dom_html.document##body)
-	(get_element_by_id "fullsize") in
+      let _ = Firebug.console##log (Js.string "suppression de fullsize") in
+      Dom.removeChild (Dom_html.document##body) (To_dom.of_div fullsize_div)
+    and close_button_d = To_dom.of_div close_button in
+    let handle_key_event ev =
+      let _ = Firebug.console##log (Js.string "touche pressee") in
+      match ev##keyCode with
+      | 27 (* escape *)  -> remove_div ev
+      | 81 (* q *)       -> remove_div ev
+      | _ -> () in
     let open Event_arrows in
-        let _ = run (clicks (To_dom.of_div close_button)
-		       (arr remove_div)) () in ()
+	let _ = Firebug.console##log (Js.string "creation des evenements") in
+	run (keypresses (To_dom.of_div fullsize_div) (arr handle_key_event)) ();
+	run (clicks close_button_d (arr remove_div)) ();
+	()
 }}
 
 {server{
-  let close_image_handler close_button =
-    {{close_image_handler %close_button}}
+
+(* Server side call to close_image_handler                                    *)
+  let close_image_handler close_button fullsize_div =
+    {{close_image_handler %close_button %fullsize_div }}
 }}
 
 {shared{
 
+(* fullsize_image : ?string -> Pathname.t -> div                              *)
+(* Return a div hiding all the page to show the image in the path             *)
   let fullsize_image ?description:(d="") path =
     let description =
       if (String.length d) = 0
@@ -243,23 +280,27 @@ let get_element_by_id id =
       else d
     and pathlist = Pathname.to_list path
     and close_button = div ~a:[a_class ["close_button"]] [pcdata "X"] in
-    let _ = close_image_handler close_button in
+    let fullsize_div =
     div ~a:[a_class ["fullsize"]; a_id "fullsize"]
       [div ~a:[a_class ["overlayer"]] [];
        div ~a:[a_class ["box"]]
          [img ~a:[a_class ["image"]] ~alt:description
              ~src:(make_uri ~service:(Eliom_service.static_dir ()) pathlist) ();
           div ~a:[a_class ["details"]]
-            [pcdata description; close_button]]]
+            [pcdata description; close_button]]] in
+    let _ = close_image_handler close_button fullsize_div in
+    fullsize_div
 
 }}
 
 {client{
 
+(* fullsize_handler : div -> data -> string -> unit                           *)
+(* Event handler which display fullsize image when the thumbnail is clicked   *)
   let fullsize_handler clicked_thumbnail_s data filename =
     let clicked_thumbnail = To_dom.of_li clicked_thumbnail_s in
     let fullsize_div =
-      fullsize_image (Pathname.extend_file (path data) filename) in
+      fullsize_image (Pathname.extend_file (full_path data) filename) in
     let append_div div _ =
       Dom.appendChild (Dom_html.document##body)
         (Eliom_content.Html5.To_dom.of_div div) in
@@ -274,8 +315,10 @@ let get_element_by_id id =
 
 {client{
 
+(* display_image_thumbnail : data -> string -> li                             *)
+(* Return a div containing a thumbnail (on client side)                       *)
   let display_image_thumbnail data filename  =
-    let file_path = Pathname.extend_file (path data) filename in
+    let file_path = Pathname.extend_file (full_path data) filename in
     let elem = li [show_thumbnail file_path; pcdata filename] in
     let _ = fullsize_handler elem data filename in
     elem
@@ -288,37 +331,41 @@ let get_element_by_id id =
 
 {client{
 
-(* display_img : string -> (string list, string list) -> ul                   *)
-(* Take a path, a list of directories and a list of files                     *)
-(* and return a div containing a pretty displaying of them.                   *)
+(* display_img : data -> post_coservice' -> (string list, string list) -> ul  *)
+(* Take a list of directories and a list of files and return a div containing *)
+(* a pretty displaying of them.                                               *)
   let rec display_img_client data service (file_list, dir_list) =
-    let directory_thumb_path = (Pathname.extend (path data) directory_thumbnail) in
-    let parent =
-      let tmp = li ~a:[a_class ["dir"]; a_id ("dir_parent")]
-        [show_img directory_thumb_path; pcdata "< Back"] in
+    let dir_thb_path = Pathname.extend (full_path data) directory_thumbnail in
+    let parent () =
+      let tmp = li ~a:[a_class ["dir"]] [show_img dir_thb_path; pcdata "◄ Back"] in
       let _ = dir_handler_client (chpath data (Pathname.parent (path data)))
 	tmp service in tmp in
+    let thumbnails_list =
+      (List.map
+         (fun filename ->
+           let monli = li ~a:[a_class ["dir"]]
+             [show_img dir_thb_path; pcdata filename] in
+	   dir_handler_client
+	     (chpath data (Pathname.extend_file (path data) filename))
+             monli service;
+	   monli
+	 ) dir_list)
+      @ (List.map (display_image_thumbnail data) file_list) in
     div ~a:[a_id ("gallery_ct" ^ (single_id data))]
       [p ~a:[a_class ["path"]] [pcdata (Pathname.to_string (path data))];
-       ul (parent::(List.map
-                (fun filename ->
-                  let monli = li ~a:[a_class ["dir"]]
-                    [show_img directory_thumb_path; pcdata filename] in
-		  dir_handler_client
-		    (chpath data (Pathname.extend_file (path data) filename))
-                    monli service;
-		  monli
-		) dir_list)
-           @ (List.map (display_image_thumbnail data) file_list))]
+       ul (if Pathname.is_empty (path data)
+	 then thumbnails_list
+	 else (parent ())::thumbnails_list)]
 
-(* dir_handler_client : Pathname.t -> string -> post_coservice' -> unit       *)
-(* Take the path, the directory button identifier and the                     *)
-(* client_to_server_service. It set the handler associeted with the directory *)
-(* button, so when you click it, it's showing its content.                    *)
+(* dir_handler_client : data -> li -> post_coservice' -> unit                 *)
+(* Take the directory button and set the handler associeted with the          *)
+(* directory button, so when you click it, it's showing its content.          *)
   and dir_handler_client data elem service =
     let get_list_from_server () =
       Eliom_client.call_caml_service
-        ~service:service () ((Pathname.to_string (path data)), (single_id data)) in
+        ~service:service () ((Pathname.to_string (original_path data)),
+			     ((Pathname.to_string (path data)),
+			      (single_id data))) in
     let replace_dir (t, file_lists) _ =
       let gallery_div = get_element_by_id ("gallery" ^ (single_id data))
       and to_replace = get_element_by_id ("gallery_ct" ^ (single_id data))
@@ -334,9 +381,9 @@ let get_element_by_id id =
 
 {server{
 
-(* dir_handler_server : string -> handler                                     *)
-(* Take the directory id and return a js action that replace it by its        *)
-(* contents when clicked                                                      *)
+(* dir_handler_server : li -> data -> handler                                 *)
+(* Take the directory thumbnail element and return a js action that replace   *)
+(* the current directory displaying by the display of the directory clicked   *)
   let dir_handler_server theli data =
     {{ dir_handler_client %data %theli %client_to_server_service }}
 
@@ -348,6 +395,8 @@ let get_element_by_id id =
 
 {server{
 
+(* display_directories_thumbnail : Pathname.t -> data -> string -> li         *)
+(* On server side, return a thumbnail of a directory                          *)
   let display_directories_thumbnail directory_thumb_path data filename =
     let monli = li ~a:[a_class ["dir"]]
       [show_img directory_thumb_path; pcdata filename]
@@ -356,8 +405,10 @@ let get_element_by_id id =
       (dir_handler_server monli (chpath data (Pathname.extend_file (path data) filename))) in
     monli
 
+(* display_image_thumbnail : data -> string -> li                             *)
+(* On server side, return a thumbnail of an image                             *)
    let display_image_thumbnail data filename  =
-     let file_path = Pathname.extend_file (path data) filename in
+     let file_path = Pathname.extend_file (full_path data) filename in
      let elem = li [show_thumbnail file_path; pcdata filename] in
      let _ = Eliom_service.onload {{fullsize_handler %elem %data %filename}} in
      elem
@@ -366,12 +417,12 @@ let get_element_by_id id =
 
 {server{
 
-(* display_img : path -> (string list, string list) -> ul                     *)
-(* Take a path and return a list of pictures and directory                    *)
+(* display_img : data -> (string list, string list) -> ul                     *)
+(* Take a path and return a list of pictures and directories                  *)
 let display_images_server data (file_list, dir_list) =
-  let dir_thumb_path = (Pathname.extend (path data) directory_thumbnail) in
+  let dir_thb_path = (Pathname.extend (full_path data) directory_thumbnail) in
   div ~a:[a_id ("gallery_ct" ^ (single_id data))]
-    [ul ((List.map (display_directories_thumbnail dir_thumb_path data) dir_list) @
+    [ul ((List.map (display_directories_thumbnail dir_thb_path data) dir_list) @
             (List.map (display_image_thumbnail data) file_list))]
 
 }}
@@ -390,9 +441,10 @@ let display_images_server data (file_list, dir_list) =
 (* Return a div containing a pretty displaying of a gallery                   *)
    let viewer_path ?title:(title=default_gallery_title) pathname =
      let single_id = Random.self_init (); string_of_int (Random.int 999) in
+     let data = ndata pathname (Pathname.new_path ()) single_id in
      div ~a:[a_class["gallery"]; a_id ("gallery" ^ single_id)]
        [h3 ~a:[a_id "title"] [pcdata title];
-        display_images_server (ndata pathname single_id) (img_dir_list pathname)]
+        display_images_server data (img_dir_list data)]
 
    let viewer ?title:(t=default_gallery_title) list_path =
      viewer_path ~title:t
