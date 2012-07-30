@@ -15,3 +15,5 @@ _client
 tests/*
 *~
 #*#
+.thb_*
+.directory.png
