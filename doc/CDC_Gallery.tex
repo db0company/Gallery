@@ -66,14 +66,14 @@ que ce module soit terminé.
   \item \yes{Il doit être possible d'afficher l'image dans sa taille originale}
 \end{itemize}
 \begin{itemize}
-  \item \ongoing{Il doit être possible de parcourir les dossiers et les
+  \item \yes{Il doit être possible de parcourir les dossiers et les
     sous-dossiers}
   \item \yes{La distinction entre des fichiers et dossiers doit être claire}
   \item \yes{La récupération de la liste des fichiers des sous-dossiers
     devra être faite uniquement lorsque c'est nécessaire (Pour cela,
     le client appelera une fonction du serveur au moment du click sur
     l'icône du dossier)}
-  \item \nobox{Il devra être possible de revenir au dossier parent (sauf à la racine)}
+  \item \yes{Il devra être possible de revenir au dossier parent (sauf à la racine)}
 \end{itemize}
 \begin{itemize}
   \item \yes{L'affichage des images ne doit pas provoquer de changement de page}
@@ -107,23 +107,10 @@ La liste suivante présente des fonctionnalités dites ``bonus'' proposées pour
     fonctions utiles du modules uniquement}
 \end{itemize}
 \begin{itemize}
-  \item \nobox{Il pourra être possible de générer automatiquement les miniatures
-    grâce au binding d'\textbf{ImageMagick} pour OCaml}
-  \item \nobox{Cette génération pourra se faire grâce à une fonction du module}
-  \item \nobox{Cette génération pourra se faire uniquement lorsque les images
-    miniaturisées n'existent pas déjà afin d'alléger le processus}
-  \item \nobox{Cette génération pourra se faire au choix : jamais, au lancement
-    du serveur, au lancement du site web par les utilisateurs}
-\end{itemize}
-\begin{itemize}
-  \item \nobox{Il pourra y avoir un affichage des images d'une taille intermédiaire
-    pour éviter de charger des images trop lourdes et ces images seront
-    générées de la même manière que les miniatures}
+  \item \yes{Il pourra être possible de générer automatiquement les miniatures}
 \end{itemize}
 \begin{itemize}
   \item \yes{L'utilisateur pourra à tout moment savoir à quel chemin il se trouve}
-  \item \nobox{L'utilisateur pourra cliquer sur les dossiers constituant le chemin
-    afin d'y retourner de manière rapide}
 \end{itemize}
 \begin{itemize}
   \item \nobox{Il pourra être possible de naviguer à travers les images en cliquant
@@ -221,7 +208,7 @@ tickets de l'interface sera aussi très utile.
   \item N'est exporté dans l'interface du module que ce qui est nécessaire.
   \item Toutes les valeurs exportées sont justifiables.
   \item Si un type est complexe, un module contenant ce type avec des fonctions outils
-  \item permettront de l'utiliser.
+    permettront de l'utiliser.
 \newpage
   \item Le coding style suivant est utilisé :
     \begin{itemize}
@@ -308,7 +295,7 @@ tickets de l'interface sera aussi très utile.
   \item \textbf{Utilisation du module CamlImages} (9 Juillet 2012)\\
     \textbf{Tâche en cours :} Génération automatique de miniatures.\\
     \textbf{Problème survenu :} Le module CamlImages est difficile à compiler. Une fois celui-ci fonctionnel, on s'aperçoit que beaucoup de fonctions n'ont pas été implémentées pour beaucoup de format d'images.\\
-    \textbf{Résolution :} Utilisation des bindings d'ImageMagick pour OCaml.
+    \textbf{Résolution :} Script externe utilisant ImageMagick sans OCaml.
 
   \item \textbf{Str.split côté client} (11 Juillet 2012)\\
     \textbf{Tâche en cours :} Portage de l'affichage du contenu d'un dossier côté client.\\
@@ -318,17 +305,13 @@ tickets de l'interface sera aussi très utile.
   \item \textbf{Récupération de services côté client} (11 Juillet 2012)\\
     \textbf{Tâche en cours :} Parcours de fichiers et dossiers, lien vers un sous-sous-dossier. La génération de l'affichage a dû être entièrement re-pensé pour le côté client puisque les contraintes sont complétement différentes côté client et côté serveur.\\
     \textbf{Problème survenu :} Comment faire en sorte d'appeler la fonction côté serveur qui récupérera la liste des fichiers si l'on a pas accès au service ? \\
-    \textbf{Résolution :} En cours.
+    \textbf{Résolution :} caml\_call\_service
 
   \item \textbf{Recupération des fichiers dans le static\_dir} (16 Juillet 2012)\\
     \textbf{Problème survenu :} Les fichiers doivent forcément être dans le static\_dir. On doit parcourir le dossier avec opendir. Il faut donc pouvoir récupérer le path du static\_dir. \\
-    \textbf{Résolution :} En cours.
+    \textbf{Résolution :} Utilisation de Ocsigen\_local\_files.resolve
 
 \end{itemize}
-
-\section{Planning final}
-
-Dead-line finale Galerie : 1 Aôut 2012.\\
 
 %% --------------------------------------------------------------------- %%
 
