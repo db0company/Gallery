@@ -129,8 +129,6 @@ include .depend
 
 ## installation #########
 
-$(STATICDIR):
-	mkdir -p $@
-
-install: all $(STATICDIR)
-	cp $(APP_NAME).js $(STATICDIR)/$(APP_NAME).js
+install:
+	@mkdir -p $(STATICDIR)/
+	@cp $(APP_NAME).js $(STATICDIR)/$(APP_NAME).js
