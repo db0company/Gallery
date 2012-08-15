@@ -242,31 +242,28 @@ let get_element_by_id id =
 
 {client{
 
-(* close_image_handler : div -> div -> unit                                   *)
+(* fullsize_image_handler : div -> div -> unit                                *)
 (* Events handler when the cross button to close a fullsize image is clicked  *)
-  let close_image_handler close_button fullsize_div =
+  let fullsize_image_handler close_button fullsize_div =
     let remove_div _ =
       let _ = Firebug.console##log (Js.string "suppression de fullsize") in
       Dom.removeChild (Dom_html.document##body) (To_dom.of_div fullsize_div)
     and close_button_d = To_dom.of_div close_button in
     let handle_key_event ev =
-      let _ = Firebug.console##log (Js.string "touche pressee") in
       match ev##keyCode with
-      | 27 (* escape *)  -> remove_div ev
-      | 81 (* q *)       -> remove_div ev
-      | _ -> () in
+	| 27 (* escape *) | 81 (* q *) -> remove_div ()
+	| _ -> () in
     let open Event_arrows in
-	let _ = Firebug.console##log (Js.string "creation des evenements") in
-	run (keypresses (To_dom.of_div fullsize_div) (arr handle_key_event)) ();
-	run (clicks close_button_d (arr remove_div)) ();
-	()
+        let _ = run (keydowns Dom_html.document (arr handle_key_event)) ()
+	and _ = run (clicks close_button_d (arr remove_div)) () in ()
+
 }}
 
 {server{
 
-(* Server side call to close_image_handler                                    *)
-  let close_image_handler close_button fullsize_div =
-    {{close_image_handler %close_button %fullsize_div }}
+(* Server side call to fullsize_image_handler                                    *)
+  let fullsize_image_handler close_button fullsize_div =
+    {{fullsize_image_handler %close_button %fullsize_div }}
 }}
 
 {shared{
@@ -288,7 +285,7 @@ let get_element_by_id id =
              ~src:(make_uri ~service:(Eliom_service.static_dir ()) pathlist) ();
           div ~a:[a_class ["details"]]
             [pcdata description; close_button]]] in
-    let _ = close_image_handler close_button fullsize_div in
+    let _ = fullsize_image_handler close_button fullsize_div in
     fullsize_div
 
 }}
@@ -299,14 +296,13 @@ let get_element_by_id id =
 (* Event handler which display fullsize image when the thumbnail is clicked   *)
   let fullsize_handler clicked_thumbnail_s data filename =
     let clicked_thumbnail = To_dom.of_li clicked_thumbnail_s in
-    let fullsize_div =
-      fullsize_image (Pathname.extend_file (full_path data) filename) in
-    let append_div div _ =
+    let append_div _ =
+      let fullsize_div =
+	fullsize_image (Pathname.extend_file (full_path data) filename) in      
       Dom.appendChild (Dom_html.document##body)
-        (Eliom_content.Html5.To_dom.of_div div) in
+        (Eliom_content.Html5.To_dom.of_div fullsize_div) in
     let open Event_arrows in
-        let _ = run (clicks clicked_thumbnail
-                       (arr (append_div fullsize_div))) () in ()
+        let _ = run (clicks clicked_thumbnail (arr append_div)) () in ()
 }}
 
 (* ************************************************************************** *)
