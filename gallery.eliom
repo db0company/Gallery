@@ -282,7 +282,16 @@ let get_element_by_id id =
       then Pathname.no_extension path
       else d
     and pathlist = Pathname.to_list path
-    and close_button = div ~a:[a_class ["close_button"]] [pcdata "X"] in
+    and close_button = div ~a:[a_class ["close_button"]] [pcdata "X"]
+    and left_button =  div ~a:[a_class ["arrow"; "left"]] [pcdata "◄"]
+    and right_button =  div ~a:[a_class ["arrow"; "right"]] [pcdata "►"] in
+    let next_buttons =
+      match (get_prev_image image images_list,
+	     get_next_image image images_list) with
+	| (None, Some _)   -> [right_button]
+	| (Some _, None)   -> [left_button]
+	| (Some _, Some _) -> [left_button; right_button]
+	| _                -> [] in
     let fullsize_div =
     div ~a:[a_class ["fullsize"]; a_id "fullsize"]
       [div ~a:[a_class ["overlayer"]] [];
@@ -290,8 +299,9 @@ let get_element_by_id id =
          [img ~a:[a_class ["image"]] ~alt:description
              ~src:(make_uri ~service:(Eliom_service.static_dir ()) pathlist) ();
           div ~a:[a_class ["details"]]
-            [pcdata description; close_button]]] in
-    fullsize_image_handler close_button fullsize_div data images_list image;
+            ((close_button::next_buttons) @ [pcdata description])]] in
+    fullsize_image_handler close_button left_button right_button fullsize_div
+      data images_list image;
     fullsize_div
 
 (* append_fullsize_div : data -> image list -> image -> unit                  *)
@@ -313,41 +323,51 @@ let get_element_by_id id =
         let _ = run (clicks clicked_thumbnail
 		       (arr append_fullsize_div_)) () in ()
 
-(* fullsize_image_handler : div -> div -> data -> image list -> image -> unit *)
+(* fullsize_image_handler : div -> div -> div -> div -> data -> image list    *)
+(*                            -> image -> unit                                *)
 (* Events handler for fullsize image actions:                                 *)
 (* - When the cross button is clicked, to close the fullsize image            *)
 (* - When the escape of the q key is pressed, the fullsize image is closed    *)
 (* - When the right and left arrows are pressed, show next/prev image         *)
-  and fullsize_image_handler close_button fullsize_div data images_list image =
+  and fullsize_image_handler close_button left_button right_button
+	fullsize_div data images_list image =
     let remove_div canceller _ =
-      Dom.removeChild (Dom_html.document##body) (To_dom.of_div fullsize_div);
-      (function None -> () | Some x -> Event_arrows.cancel x) !canceller
-    and close_button_d = To_dom.of_div close_button in
+       Dom.removeChild (Dom_html.document##body) (To_dom.of_div fullsize_div);
+       (function None -> () | Some x -> Event_arrows.cancel x) !canceller in
     let display_other_img canceller other_image =
       match other_image with
 	| None -> ()
 	| Some image ->
 	  remove_div canceller ();
 	  ignore (append_fullsize_div data images_list image) in
+    let display_next c _ = display_other_img c (get_next_image image images_list)
+    and display_prev c _ = display_other_img c (get_prev_image image images_list) in
     let handle_key_event c ev =
       match ev##keyCode with
 	| 27 (* escape *) | 81 (* q *) -> remove_div c ()
-	| 39 (* right *) -> display_other_img c (get_next_image image images_list)
-	| 37 (* left *)  -> display_other_img c (get_prev_image image images_list)
+	| 39 (* right *) -> display_next c ()
+	| 37 (* left *)  -> display_prev c ()
 	| _ -> () in
+    let close_button_d = To_dom.of_div close_button
+    and left_button_d = To_dom.of_div left_button
+    and right_button_d = To_dom.of_div right_button in
     let open Event_arrows in
 	let c = ref None and c' = ref None in
         c := Some (run (keydowns Dom_html.document (arr (handle_key_event c))) ());
-	c' := Some (run (clicks close_button_d (arr (remove_div c'))) ())
+	ignore (run (click close_button_d >>> (arr (remove_div (c')))) ());
+	ignore (run (click left_button_d >>> (arr (display_prev (c')))) ());
+	ignore (run (click right_button_d >>> (arr (display_next (c')))) ());
+	()
 
 }}
 
 {server{
 
 (* Server side call to fullsize_image_handler                                 *)
-  let fullsize_image_handler close_button fullsize_div data images_list image =
-    {{ fullsize_image_handler %close_button %fullsize_div %data
-         %images_list %image }}
+  let fullsize_image_handler close_button left_button right_button
+      fullsize_div data images_list image =
+    {{ fullsize_image_handler %close_button %left_button %right_button
+         %fullsize_div %data %images_list %image }}
 }}
 
 (* ************************************************************************** *)

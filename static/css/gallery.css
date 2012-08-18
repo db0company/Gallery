@@ -151,3 +151,16 @@
     font-size: 0.7em;
     cursor: pointer;
 }
+
+.fullsize .arrow {
+    cursor: pointer;
+}
+
+.fullsize .right {
+    float: right;
+    margin-right: 10px;
+}
+
+.fullsize .left {
+    float: left;
+}
