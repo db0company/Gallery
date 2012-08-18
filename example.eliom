@@ -52,6 +52,7 @@ let _ =
   Example_app.register
     ~service:main_service
     (fun () () ->
+      let _ =  Ocsifs.static_to_real "images/example2.jpg" in
       Lwt.return
         (html
 	   (head
@@ -70,3 +71,4 @@ let _ =
 		 ])
 	)
     )
+
