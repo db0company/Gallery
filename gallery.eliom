@@ -319,24 +319,26 @@ let get_element_by_id id =
 (* - When the escape of the q key is pressed, the fullsize image is closed    *)
 (* - When the right and left arrows are pressed, show next/prev image         *)
   and fullsize_image_handler close_button fullsize_div data images_list image =
-    let remove_div _ =
-      Dom.removeChild (Dom_html.document##body) (To_dom.of_div fullsize_div)
+    let remove_div canceller _ =
+      Dom.removeChild (Dom_html.document##body) (To_dom.of_div fullsize_div);
+      (function None -> () | Some x -> Event_arrows.cancel x) !canceller
     and close_button_d = To_dom.of_div close_button in
-    let display_other_img other_image =
+    let display_other_img canceller other_image =
       match other_image with
 	| None -> ()
 	| Some image ->
-	  remove_div ();
+	  remove_div canceller ();
 	  ignore (append_fullsize_div data images_list image) in
-    let handle_key_event ev =
+    let handle_key_event c ev =
       match ev##keyCode with
-	| 27 (* escape *) | 81 (* q *) -> remove_div ()
-	| 39 (* right *) -> display_other_img (get_next_image image images_list)
-	| 37 (* left *)  -> display_other_img (get_prev_image image images_list)
+	| 27 (* escape *) | 81 (* q *) -> remove_div c ()
+	| 39 (* right *) -> display_other_img c (get_next_image image images_list)
+	| 37 (* left *)  -> display_other_img c (get_prev_image image images_list)
 	| _ -> () in
     let open Event_arrows in
-        let _ = run (keydowns Dom_html.document (arr handle_key_event)) ()
-	and _ = run (clicks close_button_d (arr remove_div)) () in ()
+	let c = ref None and c' = ref None in
+        c := Some (run (keydowns Dom_html.document (arr (handle_key_event c))) ());
+	c' := Some (run (clicks close_button_d (arr (remove_div c'))) ())
 
 }}
 
