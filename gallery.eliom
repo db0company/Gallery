@@ -352,11 +352,11 @@ let get_element_by_id id =
     and left_button_d = To_dom.of_div left_button
     and right_button_d = To_dom.of_div right_button in
     let open Event_arrows in
-	let c = ref None and c' = ref None in
+	let c = ref None in
         c := Some (run (keydowns Dom_html.document (arr (handle_key_event c))) ());
-	ignore (run (click close_button_d >>> (arr (remove_div (c')))) ());
-	ignore (run (click left_button_d >>> (arr (display_prev (c')))) ());
-	ignore (run (click right_button_d >>> (arr (display_next (c')))) ());
+	ignore (run (click close_button_d >>> (arr (remove_div (c)))) ());
+	ignore (run (click left_button_d >>> (arr (display_prev (c)))) ());
+	ignore (run (click right_button_d >>> (arr (display_next (c)))) ());
 	()
 
 }}
