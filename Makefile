@@ -15,8 +15,7 @@ CLIENT_PACKAGES :=
 ## Source files for the server part
 
 SERVER_FILES := 		\
-		split.eliom	\
-		pathname.ml	\
+		pathname.eliom	\
 		gallery.eliom	\
 		example.eliom	\
 				\
@@ -24,8 +23,7 @@ SERVER_FILES := 		\
 ## Source files for the client part
 
 CLIENT_FILES :=			\
-		split.eliom	\
-		pathname.ml	\
+		pathname.eliom	\
 		gallery.eliom	\
 		example.eliom	\
 				\
