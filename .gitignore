@@ -17,3 +17,6 @@ tests/*
 #*#
 .thb_*
 .directory.png
+example.conf
+pathname.eliom
+*.bak
