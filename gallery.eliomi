@@ -5,6 +5,8 @@
 (* Latest Version is on GitHub: https://github.com/db0company/Gallery         *)
 (* ************************************************************************** *)
 
+{server{
+
 open Eliom_content
 open Html5.D
 open Eliom_parameter
@@ -28,3 +30,12 @@ val viewer : ?title:string -> string list -> [> Html5_types.div ] Eliom_content.
 val viewer_str : ?title:string -> string -> [> Html5_types.div ] Eliom_content.Html5.D.elt
 val viewer_path : ?title:string -> Pathname.t -> [> Html5_types.div ] Eliom_content.Html5.D.elt
 
+
+(* ************************************************************************** *)
+(* Images tools                                                               *)
+(* ************************************************************************** *)
+
+(* Known extensions for images files                                          *)
+val allowed_extension : string list
+
+}}
