@@ -17,14 +17,15 @@ Gallery is a module for Ocsigen (OCaml Web Server + Framework) to display a cute
 ### How to test it?
 
 * Install it by launching the script `./install.sh`
-_It will install external modules needed and generate you a configuration file._
-* Generate thumbnails by launching the script `./generate_thumbnail.sh gallery_files/images/`
+_It will install the required external modules and generate a configuration file for you._
+* Generate thumbnails by launching the script `./generate_thumbnails.sh gallery_files/images/`
 * Compile the example using `make`
+* Launch the website using `ocsigenserver -c example.conf`
 * Open the website in your browser
 
 ***
 
-### How to insert it in my website?
+### How to insert it into my website?
 
 ##### Install files
 
@@ -34,11 +35,12 @@ _It will install external modules needed and generate you a configuration file._
 You will need these files to add Gallery to your website:
 * `gallery.eliom`
 * `pathname.eliom`
+* `.directory.png` (or your own directory thumbnail)
 
 Copy them (and their interfaces `.eliomi`) in your website source code directory.
 
 * Choose a folder for the images you will want to display.
-* Launch the script `./generate_thumbnail.sh` with the folder path you chose.
+* Launch the script `./generate_thumbnails.sh` with the folder path you chose.
   _It will generate thumbnails for your images._
 
 * Copy the file `gallery.css` to your gallery folder.
@@ -48,9 +50,9 @@ Copy them (and their interfaces `.eliomi`) in your website source code directory
 * Edit your configuration file to add the two news `.cmo` you will have to insert:
 
 ```xml
-      <eliom module="/real/path/to/your/sources/folder/pathname.cmo" />
-      <eliom module="/real/path/to/your/sources/folder/gallery.cmo">
-         <gallery dir="/real/path/to/your/images/folder/" />
+      <eliom module="/real/path/to/your/sources/folder/_server/pathname.cmo" />
+      <eliom module="/real/path/to/your/sources/folder/_server/gallery.cmo">
+         <gallery dir="/real/path/to/the/gallery/folder/" />
       </eliom>
 ```
 
@@ -58,22 +60,32 @@ Copy them (and their interfaces `.eliomi`) in your website source code directory
 
 * The gallery directory can be the same as the static directory specified to staticmod ;)
 
-##### Add it on my website code
+##### Add it to my website code
+
+* Add `pathname.eliom` and `gallery.eliom` in your Makefile, both on the server and client sides.
 
 You will have to call two functions:
 
 * `Gallery.load_css`
-  * This function has one parameter: the path of where the css file is.
-  * It must be a relative path to the gallery folder specified in the configuration file.
+  * This function has one parameter: the path of the css file.
+  * It must be a _relative path_ to the gallery folder specified in the configuration file.
   * The path argument can be a list (`load_css`), a string (`load_css_str`)
     or a [Pathname.t](https://github.com/db0company/Pathname) (`load_css_path`).
+  * This function returns an HTML5 element that must be added in the `head` list:
+
+       (html
+           (head (title (pcdata "Ocsigen Gallery Example")) [Gallery.load_css ["css"]])
+           ...)
 
 * `Gallery.viewer`
   * This function has one optional paramter: the description of the gallery, displayed on top of it.
-  * This function has one required parameter: the path of where the images folder is.
-  * It must be a relative path to the gallery folder specified in the configuration file.
+  * This function has one required parameter: the path of the images folder.
+  * It must be a _relative path_ to the gallery folder specified in the configuration file.
   * The path argument can be a list (`viewer`), a string (`viewer_str`)
     or a [Pathname.t](https://github.com/db0company/Pathname) (`viewer_path`).
+  * This function return an HTML5 div element that can be added on your website,
+    anywhere that its possible to add a div element :)
+  * You can have as many gallery as you want on the same page!
 
 ***
 
@@ -84,22 +96,26 @@ You will have to call two functions:
 You can modify the gallery style!
 Edit the `gallery.css` file with your own colors.
 
-##### My website stop immediatly when I launch it
+##### My website stops immediatly when I launch it
 
 An exception is thrown when the configuration file is invalid.
 Have a look at the [configuration file part](#configuration-file) of this README.
 
-##### Thumbnails are now displaying
+##### Thumbnails are not being displayed
 
-Don't forget to launch the `./generate_thumbnail.sh` script to generate them!
+Don't forget to launch the `./generate_thumbnails.sh` script to generate them!
 
-If you are sure that they have been generated, check if the folder path you provide in the configuration file is correct (exists, have sufficient permissions, ...).
+If you are sure that they have been generated, check if the folder path you provide in the configuration file is correct (exists, has sufficient permissions, ...).
+
+##### Unbound module Gallery
+
+In OCaml and Ocsigen, file order is important. So, in your Makefile and in your configuration file, don't forget to put pathname before gallery, and gallery before the file which is calling gallery functions!
 
 ##### What is Ocsigen and why should I use it for my website?
 
-Ocsigen is a powerful web server and framework in OCaml.
+Ocsigen is a powerful web server and framework written in OCaml.
 
-Ocsigen makes possible to write Web applications, client and server side, using OCaml, a very expressive and safe programming language.
+Ocsigen makes it possible to write Web applications, client and server side, using OCaml, a very expressive and safe programming language.
 
 * Same language and libraries for client and server parts
 * No need to encode data before sending it
