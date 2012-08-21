@@ -42,13 +42,23 @@ echo "Install Modules... " && \
      then wget https://raw.github.com/db0company/Pathname/master/Ocsigen/pathname.eliom
     fi && \
     echo "Done." && \
-    echo "Edit configuration file... " && \
-    edit_conf_file $conf_file && \
-    echo "Done." && \
-    echo "Gallery module and its example have been correctly installed. Now you can:" && \
-    echo "- Compile the example using \"make\"." && \
-    echo "- Launch the server for the example using \"ocsigenserver -c "$conf_file"\"" && \
-    echo "- Open the example website on your browser " && \
-    echo "- Use gallery for your own Ocsigen Website!"
+
+    echo -n "Generate configuration file to test the example? " && \
+    read answer && \
+    if [ -z "$answer" ]||[ $answer == "y" ]||[ $answer == 'Y' ]
+    then
+	echo "Edit configuration file... " && \
+	    edit_conf_file $conf_file && \
+	    echo "Done." && \
+
+	    echo "Gallery module and its example have been correctly installed. Now you can:" && \
+	    echo "- Compile the example using \"make\"." && \
+	    echo "- Launch the server for the example using \"ocsigenserver -c "$conf_file"\"" && \
+	    echo "- Open the example website on your browser " && \
+	    echo "- Use gallery for your own Ocsigen Website!"
+    else
+	    echo -n "Gallery module have been correctly installed. " && \
+		echo "Now you can use gallery for your own Ocsigen Website!"
+    fi
 
 
