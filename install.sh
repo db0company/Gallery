@@ -39,7 +39,9 @@ function	edit_conf_file() {
 
 echo "Install Modules... " && \
     if [ ! -e "pathname.eliom" ]
-     then wget https://raw.github.com/db0company/Pathname/master/Ocsigen/pathname.eliom
+     then
+       wget https://raw.github.com/db0company/Pathname/master/Ocsigen/pathname.eliom
+       wget https://raw.github.com/db0company/Pathname/master/Ocsigen/pathname.eliomi
     fi && \
     echo "Done." && \
 
