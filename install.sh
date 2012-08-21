@@ -11,6 +11,7 @@ conf_file='example.conf'
 function	edit_conf_file() {
     file=$1
     default_port=8080
+    default_tmp_path='/tmp'
     pwd=`pwd | sed 's#\/#\\\/#g'`
 
     if [ -e $file.bak ]
@@ -26,11 +27,15 @@ function	edit_conf_file() {
          else sed -i".tmp" 's/\$PORT/'$port'/' $file
         fi && \
 
-	echo -n "\"tmp\" directory (/)? " && \
+	echo -n "Temporary directory ("$default_tmp_path")? " && \
 	read logdir && \
-	logdir=`echo $logdir | sed 's#\/#\\\/#g'` && \
+        if [ -z $logdir ]
+	 then
+	    logdir=`echo $default_tmp_path | sed 's#\/#\\\/#g'`
+	 else
+	    logdir=`echo $logdir | sed 's#\/#\\\/#g'`
+	fi && \
 	sed -i".tmp" 's/\$LOGDIR/'$logdir'/' $file && \
-
 	sed -i".tmp" 's/\$PWD/'$pwd'/' $file && \
 	rm *.tmp && \
 	return 0
@@ -45,7 +50,7 @@ echo "Install Modules... " && \
     fi && \
     echo "Done." && \
 
-    echo -n "Generate configuration file to test the example? " && \
+    echo -n "Generate configuration file to test the example (Y/n)? " && \
     read answer && \
     if [ -z "$answer" ]||[ $answer == "y" ]||[ $answer == 'Y' ]
     then
