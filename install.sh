@@ -12,6 +12,11 @@ function	edit_conf_file() {
     file=$1
     default_port=8080
     pwd=`pwd | sed 's#\/#\\\/#g'`
+
+    if [ -e $file.bak ]
+    then mv $file.bak $file
+    fi
+
     cp $file $file.bak && \
 
 	echo -n "Port number ("$default_port")? " && \
