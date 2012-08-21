@@ -414,7 +414,8 @@ let get_element_by_id id =
   let display_image_thumbnail data fsv images_list image =
     let filename = snd image in
     let file_path = Pathname.extend_file (full_path data) filename in
-    let elem = li [show_thumbnail file_path fsv; pcdata filename] in
+    let elem = li [show_thumbnail file_path fsv;
+		   pcdata (Pathname.no_extension file_path)] in
     let _ = fullsize_handler elem data image images_list in
     elem
 
@@ -507,7 +508,8 @@ let get_element_by_id id =
    let display_image_thumbnail data images_list image =
      let filename = snd image in
      let file_path = Pathname.extend_file (full_path data) filename in
-     let elem = li [show_thumbnail file_path; pcdata filename] in
+     let elem = li [show_thumbnail file_path;
+		    pcdata (Pathname.no_extension file_path)] in
      let _ = Eliom_service.onload
        {{fullsize_handler %elem %data %image %images_list}} in
      elem
