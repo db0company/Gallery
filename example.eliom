@@ -56,8 +56,7 @@ let _ =
         (html
 	   (head
 	      (title (pcdata "Ocsigen Gallery Example"))
-	      [css_link ~uri:(make_uri (Eliom_service.static_dir ())
-				["css";"style.css"]) ();
+	      [css_link ~uri:(make_uri (Eliom_service.static_dir ()) ["style.css"]) ();
 		 Gallery.load_css ["css"]])
            (body [page_title ();
 		  page_menu ();

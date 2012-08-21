@@ -15,8 +15,43 @@
 }}
 
 (* ************************************************************************** *)
+(* Gallery files directory service                                            *)
+(* ************************************************************************** *)
+
+{server{
+
+exception Invalid_gallery_config
+
+(* gallery_path : Pathname.t                                                  *)
+(* /!\ This value can raise an exception that prevents the website to start   *)
+let gallery_path =
+  let fail () = raise Invalid_gallery_config in
+  try match List.hd (Eliom_config.get_config ()) with
+    | Simplexmlparser.Element (name, list_attrib, content_list) ->
+      if name = "gallery"
+      then Pathname.new_path_of_string (List.assoc "dir" list_attrib)
+      else fail ()
+    | _ -> fail ()
+  with _ -> fail ()
+
+(* This service is used by images and css to get the full path on filesytem   *)
+(* Return value: string                                                       *)
+let files_service =
+  Eliom_registration.File.register_service
+    ~path:[]
+    ~get_params:(suffix (all_suffix "path"))
+    (fun path () ->
+      let strpath = Pathname.new_path_of_list path in
+      Lwt.return
+	(Pathname.to_string (Pathname.concat gallery_path strpath)))
+
+}}
+
+(* ************************************************************************** *)
 (* OCaml4 not installed yet...                                                *)
 (* ************************************************************************** *)
+
+{server{
 
 (* mapi : (int -> 'a -> 'b) -> 'a list -> 'b list                             *)
 (* Same as List.map, but the function is applied to the index of the element  *)
@@ -27,6 +62,8 @@ let mapi f l =
     | [] -> []
     | a::l -> let r = f i a in r :: aux (i + 1) f l in
   aux 0 f l
+
+}}
 
 (* ************************************************************************** *)
 (* Gallery Data                                                               *)
@@ -64,12 +101,12 @@ module Data : DATA =
   struct
     type t = (Pathname.t * Pathname.t * string)
 
-    let ndata o p s = (o, p, s)
-    let original_path (o, _, _) = o
+    let ndata op p id = (op, p, id)
+    let original_path (op, _, _) = op
     let path (_, p, _) = p
-    let single_id (_, _, s) = s
-    let chpath (o, p, s) np = (o, np, s)
-    let full_path (o, p, _) = Pathname.concat o p
+    let single_id (_, _, id) = id
+    let chpath (op, p, id) np = (op, np, id)
+    let full_path (op, p, _) = Pathname.concat op p
   end
 
 open Data
@@ -92,7 +129,7 @@ open Data
 (* the gallery css file is as an argument.                                    *)
   let aux_load_css path =
     let gallery_css_path = (Pathname.extend_file path gallery_css_file) in
-    css_link ~uri:(make_uri (Eliom_service.static_dir ())
+    css_link ~uri:(make_uri ~service:files_service
                      (Pathname.to_list gallery_css_path)) ()
   let load_css_path path =
     aux_load_css path
@@ -125,17 +162,17 @@ open Data
 
 }}
 
-{shared{
-
 (* show_img : Pathname.t -> [> `Img ] Eliom_pervasives.HTML5.elt              *)
 (* Return an image node corresponding to the given image                      *)
+{client{
+  let show_img path files_service =
+    img ~alt:(Pathname.no_extension path)
+      ~src:(make_uri ~service:files_service (Pathname.to_list path)) ()
+}}
+{server{
   let show_img path =
-    img
-      ~alt:(Pathname.no_extension path)
-      ~src:(make_uri
-              ~service:(Eliom_service.static_dir ())
-              (Pathname.to_list path)) ()
-
+    img ~alt:(Pathname.no_extension path)
+      ~src:(make_uri ~service:files_service (Pathname.to_list path)) ()
 }}
 
 (* ************************************************************************** *)
@@ -163,12 +200,17 @@ open Data
 (* default_thumbnail_path : Pathname.t -> Pathname.t                          *)
    let default_thumbnail_path path =
      Pathname.extend (Pathname.parent path) default_thumbnail
+}}
 
 (* show_thumbnail : Pathname.t -> [> `Img ] Eliom_pervasives.HTML5.elt        *)
 (* Return an image node corresponding to the thumbnail of the given image     *)
+{server{
    let show_thumbnail path =
      show_img (thumbnail_path path)
-
+}}
+{client{
+   let show_thumbnail path service =
+     show_img (thumbnail_path path) service
 }}
 
 (* ************************************************************************** *)
@@ -177,12 +219,10 @@ open Data
 
 {server{
 
-(* /!\ todo: ["static"] must be replace by the static_dir *)
 (* relative_to_real : Pathname.t -> string                                    *)
 (* Take a path relative to the static_dir and return the real path            *)
   let relative_to_real path =
-    (Pathname.to_string (Pathname.concat
-                           (Pathname.new_path_of_list ["static"]) path))
+    (Pathname.to_string (Pathname.concat gallery_path path))
 
 }}
 
@@ -220,10 +260,6 @@ open Data
 }}
 
 (* ************************************************************************** *)
-(* Ocsigen various tools                                                      *)
-(* ************************************************************************** *)
-
-(* ************************************************************************** *)
 (* Client call server side function                                           *)
 (* ************************************************************************** *)
 
@@ -231,6 +267,7 @@ open Data
 
 (* This service is called by the client. It returns the path and a list of    *)
 (* files and directory inside this path, so the client can display it.        *)
+(* Return value: (data, (string list * image list))                           *)
   let client_to_server_service =
     Eliom_registration.Ocaml.register_post_coservice'
       ~post_params:(string "original_path" ** string "path" ** string "single_id")
@@ -241,10 +278,6 @@ open Data
         Lwt.return (data, (img_dir_list data)))
 
 }}
-
-(* ************************************************************************** *)
-(* Gallery functions                                                          *)
-(* ************************************************************************** *)
 
 {client{
 
@@ -376,12 +409,12 @@ let get_element_by_id id =
 
 {client{
 
-(* display_image_thumbnail : data -> image list -> image -> li                *)
+(* display_image_thumbnail : data -> fsv -> image list -> image -> li         *)
 (* Return a div containing a thumbnail (on client side)                       *)
-  let display_image_thumbnail data images_list image =
+  let display_image_thumbnail data fsv images_list image =
     let filename = snd image in
     let file_path = Pathname.extend_file (full_path data) filename in
-    let elem = li [show_thumbnail file_path; pcdata filename] in
+    let elem = li [show_thumbnail file_path fsv; pcdata filename] in
     let _ = fullsize_handler elem data image images_list in
     elem
 
@@ -393,45 +426,45 @@ let get_element_by_id id =
 
 {client{
 
-(* display_img_client : data -> post_coservice' ->                            *)
+(* display_img_client : data -> fsv -> post_coservice' ->                     *)
 (*                 (string list, image list) -> ul                            *)
 (* Take a list of directories and a list of files and return a div containing *)
 (* a pretty displaying of them.                                               *)
-  let rec display_img_client data service (dir_list, file_list) =
+  let rec display_img_client data fsv service (dir_list, file_list) =
     let dir_thb_path = Pathname.extend (full_path data) directory_thumbnail in
     let parent () =
       let back_button =
-	li ~a:[a_class ["dir"]] [show_img dir_thb_path; pcdata "◄ Back"] in
-      let _ = dir_handler_client (chpath data (Pathname.parent (path data)))
+	li ~a:[a_class ["dir"]] [show_img dir_thb_path fsv; pcdata "◄ Back"] in
+      let _ = dir_handler_client (chpath data (Pathname.parent (path data))) fsv
 	back_button service in back_button in
     let thumbnails_list =
       (List.map
          (fun filename ->
            let thb_button = li ~a:[a_class ["dir"]]
-             [show_img dir_thb_path; pcdata filename] in
+             [show_img dir_thb_path fsv; pcdata filename] in
 	   let _ = dir_handler_client
-	     (chpath data (Pathname.extend_file (path data) filename))
+	     (chpath data (Pathname.extend_file (path data) filename)) fsv
              thb_button service in thb_button) dir_list)
-      @ (List.map (display_image_thumbnail data file_list) file_list) in
+      @ (List.map (display_image_thumbnail data fsv file_list) file_list) in
     div ~a:[a_id ("gallery_ct" ^ (single_id data))]
       [p ~a:[a_class ["path"]] [pcdata (Pathname.to_string (path data))];
        ul (if Pathname.is_empty (path data)
 	 then thumbnails_list
 	 else (parent ())::thumbnails_list)]
 
-(* dir_handler_client : data -> li -> post_coservice' -> unit                 *)
+(* dir_handler_client : data -> fsv -> li -> post_coservice' -> unit          *)
 (* Take the directory button and set the handler associeted with the          *)
 (* directory button, so when you click it, it's showing its content.          *)
-  and dir_handler_client data clicked_thb service =
+  and dir_handler_client data fsv clicked_thb service =
     let get_list_from_server () =
       Eliom_client.call_caml_service
         ~service:service () ((Pathname.to_string (original_path data)),
-			     ((Pathname.to_string (path data)),
+			     (((Pathname.to_string (path data))),
 			      (single_id data))) in
     let replace_dir (t, file_lists) _ =
       let gallery_div = get_element_by_id ("gallery" ^ (single_id data))
       and to_replace = get_element_by_id ("gallery_ct" ^ (single_id data))
-      and new_div = display_img_client data service file_lists in
+      and new_div = display_img_client data fsv service file_lists in
       (Dom.replaceChild gallery_div (To_dom.of_div new_div) to_replace) in
     let value_binding _ =
       ignore (Lwt.bind (get_list_from_server ())
@@ -448,7 +481,8 @@ let get_element_by_id id =
 (* Take the directory thumbnail element and return a js action that replace   *)
 (* the current directory displaying by the display of the directory clicked   *)
   let dir_handler_server clicked_thb data =
-    {{ dir_handler_client %data %clicked_thb %client_to_server_service }}
+    {{ dir_handler_client %data %files_service %clicked_thb
+         %client_to_server_service }}
 
 }}
 
