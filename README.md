@@ -73,9 +73,11 @@ You will have to call two functions:
     or a [Pathname.t](https://github.com/db0company/Pathname) (`load_css_path`).
   * This function returns an HTML5 element that must be added in the `head` list:
 
+```ocaml
        (html
            (head (title (pcdata "Ocsigen Gallery Example")) [Gallery.load_css ["css"]])
            ...)
+```
 
 * `Gallery.viewer`
   * This function has one optional paramter: the description of the gallery, displayed on top of it.
