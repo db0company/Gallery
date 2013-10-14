@@ -66,18 +66,20 @@ ${APP_NAME}.cmxa: ${SERVER_OBJS:.cmo=.cmx}
 ${ELIOM_TYPE_DIR}/%.type_mli: %.eliom
 	${ELIOMC} -infer ${SERVER_INC} $<
 
+${ELIOM_SERVER_DIR}/%.cmi: %.eliomi
+	${ELIOMC} -c ${SERVER_INC} $<
 ${ELIOM_SERVER_DIR}/%.cmi: %.mli
 	${ELIOMC} -c ${SERVER_INC} $<
 
 ${ELIOM_SERVER_DIR}/%.cmo: %.ml
 	${ELIOMC} -c ${SERVER_INC} $<
 ${ELIOM_SERVER_DIR}/%.cmo: %.eliom
-	${ELIOMC} -c -noinfer ${SERVER_INC} $<
+	${ELIOMC} -c ${SERVER_INC} $<
 
 ${ELIOM_SERVER_DIR}/%.cmx: %.ml
 	${ELIOMOPT} -c ${SERVER_INC} $<
 ${ELIOM_SERVER_DIR}/%.cmx: %.eliom
-	${ELIOMOPT} -c -noinfer ${SERVER_INC} $<
+	${ELIOMOPT} -c -${SERVER_INC} $<
 
 %.cmxs: %.cmxa
 	$(ELIOMOPT) -shared -linkall -o $@ $<
@@ -93,6 +95,8 @@ CLIENT_OBJS := $(patsubst %.ml,${ELIOM_CLIENT_DIR}/%.cmo, ${CLIENT_OBJS})
 ${APP_NAME}.js: ${CLIENT_OBJS}
 	${JS_OF_ELIOM} -o $@ ${CLIENT_LIBS} $^
 
+${ELIOM_CLIENT_DIR}/%.cmi: %.eliomi
+	${JS_OF_ELIOM} -c ${CLIENT_INC} $<
 ${ELIOM_CLIENT_DIR}/%.cmi: %.mli
 	${JS_OF_ELIOM} -c ${CLIENT_INC} $<
 
