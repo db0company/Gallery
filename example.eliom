@@ -16,7 +16,7 @@ module Example_app =
      end)
 
 let main_service =
-  Eliom_service.service
+  Eliom_service.Http.service
     ~path:[""]
     ~get_params:unit
     ()

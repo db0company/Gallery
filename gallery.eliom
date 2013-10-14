@@ -399,7 +399,7 @@ let get_element_by_id id =
 (* Server side call to fullsize_image_handler                                 *)
   let fullsize_image_handler close_button left_button right_button
       fullsize_div data images_list image =
-    {{ fullsize_image_handler %close_button %left_button %right_button
+    {unit{ fullsize_image_handler %close_button %left_button %right_button
          %fullsize_div %data %images_list %image }}
 }}
 
@@ -482,7 +482,7 @@ let get_element_by_id id =
 (* Take the directory thumbnail element and return a js action that replace   *)
 (* the current directory displaying by the display of the directory clicked   *)
   let dir_handler_server clicked_thb data =
-    {{ dir_handler_client %data %files_service %clicked_thb
+    {unit{ dir_handler_client %data %files_service %clicked_thb
          %client_to_server_service }}
 
 }}
@@ -498,9 +498,13 @@ let get_element_by_id id =
   let display_directories_thumbnail directory_thumb_path data filename =
     let monli = li ~a:[a_class ["dir"]]
       [show_img directory_thumb_path; pcdata filename] in
-    let _ = Eliom_service.onload
-      (dir_handler_server monli
-	 (chpath data (Pathname.extend_file (path data) filename))) in
+    let data = (chpath data (Pathname.extend_file (path data) filename)) in
+    ignore {unit{
+      Eliom_client.onload
+        (fun () ->
+           dir_handler_client %data %files_service %monli
+             %client_to_server_service)
+    }};
     monli
 
 (* display_image_thumbnail : data -> image-> image list -> li                 *)
@@ -510,8 +514,11 @@ let get_element_by_id id =
      let file_path = Pathname.extend_file (full_path data) filename in
      let elem = li [show_thumbnail file_path;
 		    pcdata (Pathname.no_extension file_path)] in
-     let _ = Eliom_service.onload
-       {{fullsize_handler %elem %data %image %images_list}} in
+     ignore {unit{
+       Eliom_client.onload
+         (fun () ->
+            fullsize_handler %elem %data %image %images_list)
+     }};
      elem
 
 }}
